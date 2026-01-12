@@ -463,7 +463,7 @@ class TestScheduler:
     @pytest.mark.parametrize(
         "airflow_version, probe_command",
         [
-            ("1.9.0", "from airflow.jobs.scheduler_job import SchedulerJob"),
+            ("1.10.14", "from airflow.jobs.scheduler_job import SchedulerJob"),
             ("2.1.0", "airflow jobs check --job-type SchedulerJob --hostname $(hostname)"),
             ("2.5.0", "airflow jobs check --job-type SchedulerJob --local"),
         ],
@@ -481,7 +481,7 @@ class TestScheduler:
     @pytest.mark.parametrize(
         "airflow_version, probe_command",
         [
-            ("1.9.0", "from airflow.jobs.scheduler_job import SchedulerJob"),
+            ("1.10.14", "from airflow.jobs.scheduler_job import SchedulerJob"),
             ("2.1.0", "airflow jobs check --job-type SchedulerJob --hostname $(hostname)"),
             ("2.5.0", "airflow jobs check --job-type SchedulerJob --local"),
         ],
