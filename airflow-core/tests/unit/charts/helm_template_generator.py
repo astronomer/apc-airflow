@@ -39,7 +39,6 @@ BASE_URL_SPEC = (
     f"https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/"
     f"v{DEFAULT_KUBERNETES_VERSION}-standalone-strict"
 )
-GIT_ROOT_DIR = [x for x in Path(__file__).resolve().parents if (x / ".git").is_dir()][-1]
 
 crd_lookup = {
     "keda.sh/v1alpha1::ScaledObject": "https://raw.githubusercontent.com/kedacore/keda/v2.0.0/config/crd/bases/keda.sh_scaledobjects.yaml",
@@ -50,27 +49,24 @@ crd_lookup = {
 
 @cache
 def get_schema_k8s(api_version, kind, kubernetes_version):
-    """Return a standalone k8s schema for use in validation."""
-    # This function is the same as astronomer/airflow-chart
     api_version = api_version.lower()
     kind = kind.lower()
 
     if "/" in api_version:
         ext, _, api_version = api_version.partition("/")
         ext = ext.split(".")[0]
-        schema_path = f"v{kubernetes_version}-standalone/{kind}-{ext}-{api_version}.json"
+        url = f"{BASE_URL_SPEC}/{kind}-{ext}-{api_version}.json"
     else:
-        schema_path = f"v{kubernetes_version}-standalone/{kind}-{api_version}.json"
+        url = f"{BASE_URL_SPEC}/{kind}-{api_version}.json"
+    request = requests.get(url)
+    request.raise_for_status()
+    schema = json.loads(
+        request.text.replace(
+            "kubernetesjsonschema.dev", "raw.githubusercontent.com/yannh/kubernetes-json-schema/master"
+        )
+    )
+    return schema
 
-    local_sp = Path(f"{GIT_ROOT_DIR}/k8s_schema/{schema_path}")
-    if not local_sp.exists():
-        if not local_sp.parent.is_dir():
-            local_sp.parent.mkdir(parents=True)
-        request = requests.get(f"{BASE_URL_SPEC}/{schema_path}", timeout=30)
-        request.raise_for_status()
-        local_sp.write_text(request.text)
-
-    return json.loads(local_sp.read_text())
 
 def get_schema_crd(api_version, kind):
     url = crd_lookup.get(f"{api_version}::{kind}")
