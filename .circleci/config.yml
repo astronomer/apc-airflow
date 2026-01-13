@@ -57,6 +57,8 @@ workflows:
       - release_chart:
           requires:
             - package_chart
+          context:
+            - github-repo
           filters:
             branches:
               only:
