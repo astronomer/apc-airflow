@@ -54,6 +54,7 @@ workflows:
             branches:
               only:
                 - 'helm-chart/v\d+-\d+-\d+-astro'
+                - 8255-circleci-astro-chart-release
       - release_chart:
           requires:
             - package_chart
@@ -63,3 +64,4 @@ workflows:
             branches:
               only:
                 - 'helm-chart/v\d+-\d+-\d+-astro'
+                - 8255-circleci-astro-chart-release
