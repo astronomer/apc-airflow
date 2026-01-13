@@ -30,7 +30,7 @@ jobs:
       - run:
           name: Package the Airflow chart
           command:
-            scripts/ci/astronomer-airflow-chart-release.sh
+            apc-scripts/astronomer-airflow-chart-release.sh
 
   release_chart:
     docker:
