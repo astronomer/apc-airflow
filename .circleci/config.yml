@@ -36,22 +36,28 @@ jobs:
     docker:
       - image: quay.io/astronomer/ci-helm-release:2026-01
     steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
       - run:
-        name: Create GitHub release & upload file
-        run: release-and-upload.sh
+          name: Release and upload the Airflow chart
+          command: release-and-upload.sh
 
 workflows:
   release-workflow:
-    only:
-      - 'helm-chart/v\d+-\d+-\d+-astro'
     jobs:
       - unittest-charts
       - package_chart:
           requires:
-            - unittest-charts
+          - unittest-charts
+          filters:
+            branches:
+              only:
+                - 'helm-chart/v\d+-\d+-\d+-astro'
       - release_chart:
           requires:
             - package_chart
           filters:
             branches:
-              only: main
+              only:
+                - 'helm-chart/v\d+-\d+-\d+-astro'
