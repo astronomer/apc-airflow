@@ -52,6 +52,7 @@ workflows:
       - package_chart:
           requires:
           - approve-package-and-release
+          - unittest-charts
           filters:
             branches:
               only:
