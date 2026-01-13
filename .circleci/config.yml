@@ -47,9 +47,11 @@ workflows:
   release-workflow:
     jobs:
       - unittest-charts
+      - approve-package-and-release:
+          type: approval
       - package_chart:
           requires:
-          - unittest-charts
+          - approve-package-and-release
           filters:
             branches:
               only:
