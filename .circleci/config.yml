@@ -41,7 +41,7 @@ jobs:
       - checkout
       - run:
           name: Release and upload the Airflow chart
-          command: release-and-upload.sh
+          command: apc-scripts/release-and-upload.sh
 
 workflows:
   release-workflow:
