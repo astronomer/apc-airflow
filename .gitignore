@@ -254,3 +254,25 @@ licenses/LICENSES-ui.txt
 
 # airflow-build-dockerfile and correconding ignore file
 airflow-build-dockerfile*
+
+# Temporary ignore uv.lock until we integrate it fully in our constraint preparation mechanism
+/uv.lock
+
+# Ignore zip files https://github.com/apache/airflow/issues/46449
+*.zip
+
+_api/
+
+#while running go tests inside the go-sdk, it can generate log files for dags, ignore all logs
+go-sdk/**/*.log
+
+# E2e tests
+_e2e_test_report.json
+
+# UV cache
+.uv-cache/
+
+# Allow logs folder in task-sdk-integration-tests (they logs folders are ignored above in general)
+!/task-sdk-integration-tests/logs/
+test-results
+chart-rel
