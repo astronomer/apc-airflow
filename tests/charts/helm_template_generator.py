@@ -34,11 +34,11 @@ api_client = ApiClient()
 
 CHART_DIR = Path(__file__).resolve().parents[2] / "chart"
 
-DEFAULT_KUBERNETES_VERSION = "1.29.1"
-BASE_URL_SPEC = (
-    f"https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/"
-    f"v{DEFAULT_KUBERNETES_VERSION}-standalone-strict"
-)
+DEFAULT_KUBERNETES_VERSION = "1.32.0"
+BASE_URL_SPEC = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/refs/heads/master"
+
+GIT_ROOT_DIR = next(iter([x for x in Path(__file__).resolve().parents if (x / ".git").is_dir()]), None)
+MY_DIR = Path(__file__).parent.resolve()
 
 crd_lookup = {
     "keda.sh/v1alpha1::ScaledObject": "https://raw.githubusercontent.com/kedacore/keda/v2.0.0/config/crd/bases/keda.sh_scaledobjects.yaml",
@@ -48,23 +48,30 @@ crd_lookup = {
 
 
 def get_schema_k8s(api_version, kind, kubernetes_version):
+    """Return a standalone k8s schema for use in validation."""
+    # This function is mostly the same as astronomer/airflow-chart
     api_version = api_version.lower()
     kind = kind.lower()
+
+    # replace the patch version with 0
+    kubernetes_version = ".".join(kubernetes_version.split('.')[:2] + ['0'])
 
     if "/" in api_version:
         ext, _, api_version = api_version.partition("/")
         ext = ext.split(".")[0]
-        url = f"{BASE_URL_SPEC}/{kind}-{ext}-{api_version}.json"
+        schema_path = f"v{kubernetes_version}-standalone-strict/{kind}-{ext}-{api_version}.json"
     else:
-        url = f"{BASE_URL_SPEC}/{kind}-{api_version}.json"
-    request = requests.get(url)
-    request.raise_for_status()
-    schema = json.loads(
-        request.text.replace(
-            "kubernetesjsonschema.dev", "raw.githubusercontent.com/yannh/kubernetes-json-schema/master"
-        )
-    )
-    return schema
+        schema_path = f"v{kubernetes_version}-standalone-strict/{kind}-{api_version}.json"
+
+    local_sp = Path(f"{GIT_ROOT_DIR}/k8s_schema/{schema_path}")
+    if not local_sp.exists():
+        if not local_sp.parent.is_dir():
+            local_sp.parent.mkdir(parents=True)
+        request = requests.get(f"{BASE_URL_SPEC}/{schema_path}", timeout=30)
+        request.raise_for_status()
+        local_sp.write_text(request.text)
+
+    return json.loads(local_sp.read_text())
 
 
 def get_schema_crd(api_version, kind):
