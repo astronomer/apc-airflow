@@ -37,12 +37,10 @@ api_client = ApiClient()
 
 CHART_DIR = Path(__file__).resolve().parents[3] / "chart"
 
-DEFAULT_KUBERNETES_VERSION = "1.30.13"
-BASE_URL_SPEC = (
-    f"https://api.github.com/repos/yannh/kubernetes-json-schema/contents/"
-    f"v{DEFAULT_KUBERNETES_VERSION}-standalone-strict"
-)
+DEFAULT_KUBERNETES_VERSION = "1.32.0"
+BASE_URL_SPEC = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/refs/heads/master"
 
+GIT_ROOT_DIR = next(iter([x for x in Path(__file__).resolve().parents if (x / ".git").is_dir()]), None)
 MY_DIR = Path(__file__).parent.resolve()
 
 crd_lookup = {
@@ -97,34 +95,30 @@ def log_github_rate_limit_error(response: Response) -> None:
 
 @cache
 def get_schema_k8s(api_version, kind, kubernetes_version):
+    """Return a standalone k8s schema for use in validation."""
+    # This function is mostly the same as astronomer/airflow-chart
     api_version = api_version.lower()
     kind = kind.lower()
+
+    # replace the patch version with 0
+    kubernetes_version = ".".join(kubernetes_version.split('.')[:2] + ['0'])
 
     if "/" in api_version:
         ext, _, api_version = api_version.partition("/")
         ext = ext.split(".")[0]
-        url = f"{BASE_URL_SPEC}/{kind}-{ext}-{api_version}.json"
+        schema_path = f"v{kubernetes_version}-standalone-strict/{kind}-{ext}-{api_version}.json"
     else:
-        url = f"{BASE_URL_SPEC}/{kind}-{api_version}.json"
+        schema_path = f"v{kubernetes_version}-standalone-strict/{kind}-{api_version}.json"
 
-    headers = {
-        "Accept": "application/vnd.github.v3.raw",
-    }
-    if GITHUB_TOKEN:
-        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
-    else:
-        console.print("[bright_blue] No GITHUB_TOKEN found. Using unauthenticated requests.")
+    local_sp = Path(f"{GIT_ROOT_DIR}/k8s_schema/{schema_path}")
+    if not local_sp.exists():
+        if not local_sp.parent.is_dir():
+            local_sp.parent.mkdir(parents=True)
+        request = requests.get(f"{BASE_URL_SPEC}/{schema_path}", timeout=30)
+        request.raise_for_status()
+        local_sp.write_text(request.text)
 
-    response = requests.get(url, headers=headers)
-    log_github_rate_limit_error(response)
-    response.raise_for_status()
-    schema = json.loads(
-        response.text.replace(
-            "kubernetesjsonschema.dev", "raw.githubusercontent.com/yannh/kubernetes-json-schema/master"
-        )
-    )
-    return schema
+    return json.loads(local_sp.read_text())
 
 
 @cache
