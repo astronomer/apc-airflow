@@ -29,8 +29,7 @@ jobs:
       - checkout
       - run:
           name: Package the Airflow chart
-          command:
-            apc-scripts/astronomer-airflow-chart-release.sh
+          command: apc-scripts/astronomer-airflow-chart-release.sh
 
   release_chart:
     docker:
@@ -52,15 +51,15 @@ workflows:
           filters:
             branches:
               only:
-                - 'helm-chart/v\d+-\d+-\d+-astro'
+                - '/helm-chart\/v\d+-\d+-\d+-astro/'
       - package_chart:
           requires:
-          - approve-package-and-release
-          - unittest-charts
+            - approve-package-and-release
+            - unittest-charts
           filters:
             branches:
               only:
-                - 'helm-chart/v\d+-\d+-\d+-astro'
+                - '/helm-chart\/v\d+-\d+-\d+-astro/'
       - release_chart:
           requires:
             - package_chart
@@ -69,4 +68,4 @@ workflows:
           filters:
             branches:
               only:
-                - 'helm-chart/v\d+-\d+-\d+-astro'
+                - '/helm-chart\/v\d+-\d+-\d+-astro/'
