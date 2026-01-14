@@ -49,6 +49,10 @@ workflows:
       - unittest-charts
       - approve-package-and-release:
           type: approval
+          filters:
+            branches:
+              only:
+                - 'helm-chart/v\d+-\d+-\d+-astro'
       - package_chart:
           requires:
           - approve-package-and-release
