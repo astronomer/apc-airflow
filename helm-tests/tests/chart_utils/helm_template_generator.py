@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import os
 import subprocess
+from datetime import datetime, timezone
 from functools import cache
 from pathlib import Path
 from tempfile import NamedTemporaryFile
@@ -28,64 +29,96 @@ import jmespath
 import jsonschema
 import requests
 import yaml
-from airflow_breeze.utils.console import get_console
-from airflow_breeze.utils.github import log_github_rate_limit_error
 from kubernetes.client.api_client import ApiClient
+from requests import Response
+from rich.console import Console
 
 api_client = ApiClient()
 
 CHART_DIR = Path(__file__).resolve().parents[3] / "chart"
 
-DEFAULT_KUBERNETES_VERSION = "1.29.1"
-BASE_URL_SPEC = (
-    f"https://api.github.com/repos/yannh/kubernetes-json-schema/contents/"
-    f"v{DEFAULT_KUBERNETES_VERSION}-standalone-strict"
-)
+DEFAULT_KUBERNETES_VERSION = "1.32.0"
+BASE_URL_SPEC = "https://raw.githubusercontent.com/yannh/kubernetes-json-schema/refs/heads/master"
 
+GIT_ROOT_DIR = next(iter([x for x in Path(__file__).resolve().parents if (x / ".git").is_dir()]), None)
 MY_DIR = Path(__file__).parent.resolve()
 
 crd_lookup = {
     # https://raw.githubusercontent.com/kedacore/keda/v2.0.0/config/crd/bases/keda.sh_scaledobjects.yaml
-    "keda.sh/v1alpha1::ScaledObject": f"{MY_DIR.as_posix()}/keda.sh_scaledobjects.yaml",
-    # This object type was removed in k8s v1.22.0
-    # Retrieved from https://raw.githubusercontent.com/yannh/kubernetes-json-schema/master/v1.21.0/ingress-networking-v1beta1.json
-    "networking.k8s.io/v1beta1::Ingress": f"{MY_DIR.as_posix()}/ingress-networking-v1beta1.json",
+    "keda.sh/v1alpha1::ScaledObject": f"{MY_DIR.as_posix()}/keda.sh_scaledobjects.yaml"
 }
 
 
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN", "")
 
+console = Console(width=400, color_system="standard")
+
+
+def log_github_rate_limit_error(response: Response) -> None:
+    """
+    Logs info about GitHub rate limit errors (primary or secondary).
+    """
+    if response.status_code not in (403, 429):
+        return
+
+    remaining = response.headers.get("x-rateLimit-remaining")
+    reset = response.headers.get("x-rateLimit-reset")
+    retry_after = response.headers.get("retry-after")
+
+    try:
+        message = response.json().get("message", "")
+    except Exception:
+        message = response.text or ""
+
+    remaining_int = int(remaining) if remaining and remaining.isdigit() else None
+
+    if reset and reset.isdigit():
+        reset_dt = datetime.fromtimestamp(int(reset), tz=timezone.utc)
+        reset_time = reset_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+    else:
+        reset_time = "unknown"
+
+    if remaining_int == 0:
+        print(f"Primary rate limit exceeded. No requests remaining. Reset at {reset_time}.")
+        return
+
+    # Message for secondary looks like: "You have exceeded a secondary rate limit"
+    if "secondary rate limit" in message.lower():
+        if retry_after and retry_after.isdigit():
+            print(f"Secondary rate limit exceeded. Retry after {retry_after} seconds.")
+        else:
+            print(f"Secondary rate limit exceeded. Please wait until {reset_time} or at least 60 seconds.")
+        return
+
+    print(f"Rate limit error. Status: {response.status_code}, Message: {message}")
+
 
 @cache
 def get_schema_k8s(api_version, kind, kubernetes_version):
+    """Return a standalone k8s schema for use in validation."""
+    # This function is mostly the same as astronomer/airflow-chart
     api_version = api_version.lower()
     kind = kind.lower()
+
+    # replace the patch version with 0
+    kubernetes_version = ".".join(kubernetes_version.split('.')[:2] + ['0'])
 
     if "/" in api_version:
         ext, _, api_version = api_version.partition("/")
         ext = ext.split(".")[0]
-        url = f"{BASE_URL_SPEC}/{kind}-{ext}-{api_version}.json"
+        schema_path = f"v{kubernetes_version}-standalone-strict/{kind}-{ext}-{api_version}.json"
     else:
-        url = f"{BASE_URL_SPEC}/{kind}-{api_version}.json"
+        schema_path = f"v{kubernetes_version}-standalone-strict/{kind}-{api_version}.json"
 
-    headers = {
-        "Accept": "application/vnd.github.v3.raw",
-    }
-    if GITHUB_TOKEN:
-        headers["Authorization"] = f"Bearer {GITHUB_TOKEN}"
-        headers["X-GitHub-Api-Version"] = "2022-11-28"
-    else:
-        get_console().print("[info] No GITHUB_TOKEN found. Using unauthenticated requests.")
+    local_sp = Path(f"{GIT_ROOT_DIR}/k8s_schema/{schema_path}")
+    if not local_sp.exists():
+        if not local_sp.parent.is_dir():
+            local_sp.parent.mkdir(parents=True)
+        request = requests.get(f"{BASE_URL_SPEC}/{schema_path}", timeout=30)
+        request.raise_for_status()
+        local_sp.write_text(request.text)
 
-    response = requests.get(url, headers=headers)
-    log_github_rate_limit_error(response)
-    response.raise_for_status()
-    schema = json.loads(
-        response.text.replace(
-            "kubernetesjsonschema.dev", "raw.githubusercontent.com/yannh/kubernetes-json-schema/master"
-        )
-    )
-    return schema
+    return json.loads(local_sp.read_text())
 
 
 @cache
@@ -160,7 +193,7 @@ def render_chart(
         if show_only:
             for i in show_only:
                 command.extend(["--show-only", i])
-        result = subprocess.run(command, capture_output=True, cwd=chart_dir)
+        result = subprocess.run(command, check=False, capture_output=True, cwd=chart_dir)
         if result.returncode:
             raise HelmFailedError(result.returncode, result.args, result.stdout, result.stderr)
         templates = result.stdout
