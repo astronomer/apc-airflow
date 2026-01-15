@@ -16,6 +16,5 @@ if [[ ! -f "$CHART_FILE" ]] ; then
 fi
 
 # Create release with auto-generated notes and upload CHART_FILE
-gh release create "$RELEASE_VERSION" \
-  --generate-notes \
-  "$CHART_FILE"
+gh repo set-default https://github.com/astronomer/apc-airflow
+gh release create "oss-helm-chart/v${app_version}" --generate-notes "$CHART_FILE"
