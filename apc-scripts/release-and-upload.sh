@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -x
 
-app_version=$(awk '$1 == "airflowVersion:" {print $2}' chart/values.yaml | tr -d '"')
+app_version=$(awk '/^version: / {print $2}' chart/Chart.yaml | tr -d '"')
 
 # Exit if we do NOT get a 404, indicating the release already exists
 if curl -fsSL -o /dev/null "https://github.com/astronomer/apc-airflow/releases/tag/oss-helm-chart%2F${app_version}-astro" ; then
@@ -9,7 +9,7 @@ if curl -fsSL -o /dev/null "https://github.com/astronomer/apc-airflow/releases/t
   exit 1
 fi
 
-CHART_FILE="chart-rel/airflow-${app_version}-dev.tgz"
+CHART_FILE="chart-rel/airflow-${app_version}.tgz"
 if [[ ! -f "$CHART_FILE" ]] ; then
   echo "Chart file $CHART_FILE does not exist."
   exit 1
