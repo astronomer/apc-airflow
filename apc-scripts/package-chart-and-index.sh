@@ -22,5 +22,9 @@ echo
 echo "Packaging chart ..."
 echo
 helm package chart --dependency-update "$CHART_DIRECTORY" --destination "$CHART_RELEASE_DIRECTORY"
-
+echo
+echo "Generating index ..."
+echo
+( cd "${CHART_RELEASE_DIRECTORY}" && helm repo index . )
+echo
 ls -altr "${CHART_RELEASE_DIRECTORY}/"

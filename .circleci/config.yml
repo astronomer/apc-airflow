@@ -29,7 +29,7 @@ jobs:
       - checkout
       - run:
           name: Package the Airflow chart
-          command: apc-scripts/astronomer-airflow-chart-release.sh
+          command: apc-scripts/package-chart-and-index.sh
       - run:
           name: Release and upload the Airflow chart
           command: apc-scripts/release-and-upload.sh
