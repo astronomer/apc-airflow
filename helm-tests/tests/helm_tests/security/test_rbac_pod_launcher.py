@@ -73,8 +73,7 @@ class TestPodLauncher:
                 False,
                 [
                     "release-name-airflow-scheduler",
-                    "release-name-airflow-worker-kubernetes",
-                    "release-name-airflow-worker-celery",
+                    "release-name-airflow-worker",
                 ],
             ),
             # Add triggerer SA if enabled
@@ -112,7 +111,6 @@ class TestPodLauncher:
                 "rbac": {"create": rbac_create},
                 "allowPodLaunching": allow_pod_launching,
                 "executor": executor,
-                "workers": {"useWorkerDedicatedServiceAccounts": dedicated_sa},
                 "triggerer": {"enabled": triggerer_enabled},
                 "multiNamespaceMode": multi_ns,
             },
