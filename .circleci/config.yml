@@ -16,7 +16,7 @@ jobs:
             .venv/bin/pip install pytest pytest-xdist kubernetes requests jmespath jsonschema time_machine sqlalchemy pytest-asyncio
             .venv/bin/pip install dev/breeze
             mkdir -p test-results
-            .venv/bin/python -m pytest -n auto -v --junitxml=test-results/junit.xml helm-tests
+            .venv/bin/python -m pytest -n auto -v --junitxml=test-results/junit.xml helm_tests
       - store_test_results:
           path: test-results
 
