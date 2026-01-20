@@ -63,6 +63,9 @@ classifiers = [
 ]
 
 dynamic = ["version", "optional-dependencies", "dependencies"]
+dependencies = [
+    "sqlalchemy",
+]
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # !!! YOU MIGHT BE SURPRISED NOT SEEING THE DEPENDENCIES AS `project.dependencies`     !!!!!!!!!
