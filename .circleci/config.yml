@@ -43,7 +43,7 @@ workflows:
           filters:
             branches:
               only:
-                - '/helm-chart\/v\d+-\d+-\d+-astro/'
+                - 'helm-chart\/v\d+-\d+-\d+-astro/'
       - package_and_release_chart:
           requires:
             - approve-package-and-release
@@ -53,4 +53,4 @@ workflows:
           filters:
             branches:
               only:
-                - '/helm-chart\/v\d+-\d+-\d+-astro/'
+                - 'helm-chart\/v\d+-\d+-\d+-astro/'
