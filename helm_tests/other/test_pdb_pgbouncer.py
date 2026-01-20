@@ -28,13 +28,6 @@ class TestPgbouncerPdb:
             show_only=["templates/pgbouncer/pgbouncer-poddisruptionbudget.yaml"],
         )  # checks that no validation exception is raised
 
-    def test_should_pass_validation_with_just_pdb_enabled_v1beta1(self):
-        render_chart(
-            values={"pgbouncer": {"enabled": True, "podDisruptionBudget": {"enabled": True}}},
-            show_only=["templates/pgbouncer/pgbouncer-poddisruptionbudget.yaml"],
-            kubernetes_version="1.16.0",
-        )  # checks that no validation exception is raised
-
     def test_should_pass_validation_with_pdb_enabled_and_min_available_param(self):
         render_chart(
             values={
