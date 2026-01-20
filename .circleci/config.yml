@@ -20,7 +20,7 @@ jobs:
       - store_test_results:
           path: test-results
 
-  package_chart:
+  package_and_release_chart:
     docker:
       - image: quay.io/astronomer/ci-helm-release:2026-01
     steps:
@@ -29,15 +29,7 @@ jobs:
       - checkout
       - run:
           name: Package the Airflow chart
-          command: apc-scripts/astronomer-airflow-chart-release.sh
-
-  release_chart:
-    docker:
-      - image: quay.io/astronomer/ci-helm-release:2026-01
-    steps:
-      - setup_remote_docker:
-          docker_layer_caching: true
-      - checkout
+          command: apc-scripts/package-chart-and-index.sh
       - run:
           name: Release and upload the Airflow chart
           command: apc-scripts/release-and-upload.sh
@@ -52,17 +44,10 @@ workflows:
             branches:
               only:
                 - '/helm-chart\/v\d+-\d+-\d+-astro/'
-      - package_chart:
+      - package_and_release_chart:
           requires:
             - approve-package-and-release
             - unittest-charts
-          filters:
-            branches:
-              only:
-                - '/helm-chart\/v\d+-\d+-\d+-astro/'
-      - release_chart:
-          requires:
-            - package_chart
           context:
             - github-repo
           filters:
