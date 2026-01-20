@@ -13,7 +13,7 @@ jobs:
           name: unittest the Airflow chart
           command: |
             uv venv --seed --allow-existing
-            .venv/bin/pip install pytest pytest-xdist kubernetes requests jmespath jsonschema
+            .venv/bin/pip install pytest pytest-xdist kubernetes requests jmespath jsonschema time_machine sqlalchemy
             .venv/bin/pip install dev/breeze
             mkdir -p test-results
             .venv/bin/python -m pytest -n auto -v --junitxml=test-results/junit.xml helm-tests

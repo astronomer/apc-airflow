@@ -626,8 +626,8 @@ module=[
 ]
 ignore_errors = true
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
   "local-providers",
   "apache-airflow-task-sdk",
   "sqlalchemy",
