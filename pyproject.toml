@@ -629,7 +629,8 @@ ignore_errors = true
 [tool.uv]
 dev-dependencies = [
   "local-providers",
-  "apache-airflow-task-sdk"
+  "apache-airflow-task-sdk",
+  "sqlalchemy",
 ]
 
 [tool.uv.sources]
