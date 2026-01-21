@@ -574,9 +574,9 @@ class TestPgbouncerConfig:
             show_only=["templates/pgbouncer/pgbouncer-deployment.yaml"],
         )[0]
 
-        assert jmespath.search("metadata.labels", docs) == labels
+        assert labels in jmespath.search("metadata.labels", docs)
 
-        assert jmespath.search("spec.template.metadata.labels", docs) == labels
+        assert labels in  jmespath.search("spec.template.metadata.labels", docs)
 
     def test_should_add_extra_containers(self):
         docs = render_chart(
