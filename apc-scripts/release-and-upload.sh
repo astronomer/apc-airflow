@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-set -x
+set -ex
 
 CHART_VERSION=$(awk '/^version: / {print $2}' chart/Chart.yaml | tr -d '"')
 RELEASE_NAME="oss-helm-chart/${CHART_VERSION}"
+GIT_SHA_LONG=$(git rev-parse HEAD)
 
 # Exit if we do NOT get a 404, indicating the release already exists
 if curl -fsSL -o /dev/null "https://github.com/astronomer/apc-airflow/releases/tag/${RELEASE_NAME}" ; then
@@ -18,4 +19,4 @@ fi
 
 # Create release with auto-generated notes and upload CHART_FILE
 gh repo set-default https://github.com/astronomer/apc-airflow
-gh release create --generate-notes "${RELEASE_NAME}" "chart-rel/index.yaml" "${CHART_FILE}"
+gh release create --target="${GIT_SHA_LONG}" --generate-notes "${RELEASE_NAME}" "chart-rel/index.yaml" "${CHART_FILE}"
