@@ -561,6 +561,23 @@ class TestPgbouncerConfig:
 
         assert jmespath.search("spec.template.spec.containers[0].env", docs) == [env1]
 
+    def test_should_add_custom_labels(self):
+        labels = {"custom-label": "custom-value"}
+
+        docs = render_chart(
+            values={
+                "pgbouncer": {
+                    "enabled": True,
+                    "labels": labels,
+                },
+            },
+            show_only=["templates/pgbouncer/pgbouncer-deployment.yaml"],
+        )[0]
+
+        assert jmespath.search("metadata.labels", docs) == labels
+
+        assert jmespath.search("spec.template.metadata.labels", docs) == labels
+
     def test_should_add_extra_containers(self):
         docs = render_chart(
             values={
