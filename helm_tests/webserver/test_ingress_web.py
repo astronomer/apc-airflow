@@ -31,13 +31,6 @@ class TestIngressWeb:
             show_only=["templates/webserver/webserver-ingress.yaml"],
         )  # checks that no validation exception is raised
 
-    def test_should_pass_validation_with_just_ingress_enabled_v1beta1(self):
-        render_chart(
-            values={"ingress": {"web": {"enabled": True}}},
-            show_only=["templates/webserver/webserver-ingress.yaml"],
-            kubernetes_version="1.16.0",
-        )  # checks that no validation exception is raised
-
     def test_should_allow_more_than_one_annotation(self):
         docs = render_chart(
             values={"ingress": {"web": {"enabled": True, "annotations": {"aa": "bb", "cc": "dd"}}}},

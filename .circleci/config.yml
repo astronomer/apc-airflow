@@ -1,0 +1,56 @@
+---
+version: 2.1
+
+jobs:
+  unittest-charts:
+    docker:
+      - image: quay.io/astronomer/ci-helm-release:2026-01
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run:
+          name: unittest the Airflow chart
+          command: |
+            uv venv --seed --allow-existing
+            .venv/bin/pip install pytest pytest-xdist kubernetes requests jmespath jsonschema time_machine sqlalchemy pytest-asyncio
+            .venv/bin/pip install dev/breeze
+            mkdir -p test-results
+            .venv/bin/python -m pytest -n auto -v --junitxml=test-results/junit.xml helm_tests
+      - store_test_results:
+          path: test-results
+
+  package_and_release_chart:
+    docker:
+      - image: quay.io/astronomer/ci-helm-release:2026-01
+    steps:
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - checkout
+      - run:
+          name: Package the Airflow chart
+          command: apc-scripts/package-chart-and-index.sh
+      - run:
+          name: Release and upload the Airflow chart
+          command: apc-scripts/release-and-upload.sh
+
+workflows:
+  release-workflow:
+    jobs:
+      - unittest-charts
+      - approve-package-and-release:
+          type: approval
+          filters:
+            branches:
+              only:
+                - 'helm-chart\/v\d+-\d+-\d+-astro/'
+      - package_and_release_chart:
+          requires:
+            - approve-package-and-release
+            - unittest-charts
+          context:
+            - github-repo
+          filters:
+            branches:
+              only:
+                - 'helm-chart\/v\d+-\d+-\d+-astro/'

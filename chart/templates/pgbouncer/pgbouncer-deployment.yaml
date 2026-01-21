@@ -67,8 +67,8 @@ spec:
         tier: airflow
         component: pgbouncer
         release: {{ .Release.Name }}
-        {{- with .Values.labels }}
-          {{- toYaml . | nindent 8 }}
+        {{- if or (.Values.labels) (.Values.pgbouncer.labels) }}
+          {{- mustMerge .Values.pgbouncer.labels .Values.labels | toYaml | nindent 8 }}
         {{- end }}
       annotations:
         checksum/pgbouncer-config-secret: {{ include (print $.Template.BasePath "/secrets/pgbouncer-config-secret.yaml") . | sha256sum }}
