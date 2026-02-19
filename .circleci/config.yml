@@ -52,6 +52,7 @@ workflows:
             branches:
               only:
                 - 'helm-chart\/v\d+-\d+-\d+-astro'
+                - 'fix/schema'
       - package_chart:
           requires:
             - approve-package-and-release
@@ -60,6 +61,7 @@ workflows:
             branches:
               only:
                 - 'helm-chart\/v\d+-\d+-\d+-astro'
+                - 'fix/schema'
       - release_chart:
           requires:
             - package_chart
@@ -69,3 +71,4 @@ workflows:
             branches:
               only:
                 - 'helm-chart\/v\d+-\d+-\d+-astro'
+                - 'fix/schema'
