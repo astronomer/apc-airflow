@@ -9743,70 +9743,29 @@
             "default": false
         },
         "podTemplate": {
-            "description": "The content of ``pod_template_file.yaml`` used for KubernetesExecutor workers (templated). The default (see ``files/pod-template-file.kubernetes-helm-yaml``) already takes into account normal ``workers`` configuration parameters (e.g. ``workers.resources``), so you normally won't need to override this directly.",
-            "type": [
-                "string",
-                "null"
-            ],
+            "description": "Configuration for KubernetesExecutor worker pod template.",
+            "type": ["object", "null"],
             "x-docsSection": "Airflow",
             "default": null,
-            "examples": [
-                "apiVersion: v1\nkind: Pod\nmetadata:\n  name: placeholder-name\n  labels:\n    tier: airflow\n    component: worker\n    release: {{ .Release.Name }}\nspec:\n  priorityClassName: high-priority\n  containers:\n    - name: base\n    ..."
-            ]
-        },
-        "podTemplateVolumes": {
-            "description": "Additional volumes to attach to KubernetesExecutor worker pods. These are appended to the volumes defined in the pod template file.",
-            "type": [
-                "array",
-                "null"
-            ],
-            "x-docsSection": "Airflow",
-            "default": null,
-            "items": {
-                "type": "object"
-            },
-            "examples": [
-                [
-                    {
-                        "name": "my-volume",
-                        "configMap": {
-                            "name": "my-configmap"
-                        }
-                    },
-                    {
-                        "name": "my-secret-volume",
-                        "secret": {
-                            "secretName": "my-secret"
-                        }
+            "additionalProperties": false,
+            "properties": {
+                "volumes": {
+                    "description": "Additional volumes to attach to KubernetesExecutor worker pods.",
+                    "type": ["array", "null"],
+                    "default": null,
+                    "items": {
+                        "$ref": "#/definitions/io.k8s.api.core.v1.Volume"
                     }
-                ]
-            ]
-        },
-        "podTemplateVolumeMounts": {
-            "description": "Additional volume mounts to attach to the base container in KubernetesExecutor worker pods. These are appended to the volumeMounts defined in the pod template file.",
-            "type": [
-                "array",
-                "null"
-            ],
-            "x-docsSection": "Airflow",
-            "default": null,
-            "items": {
-                "type": "object"
-            },
-            "examples": [
-                [
-                    {
-                        "name": "my-volume",
-                        "mountPath": "/opt/airflow/config",
-                        "readOnly": true
-                    },
-                    {
-                        "name": "my-secret-volume",
-                        "mountPath": "/opt/airflow/secrets",
-                        "readOnly": true
+                },
+                "volumeMounts": {
+                    "description": "Additional volume mounts to attach to the base container in KubernetesExecutor worker pods.",
+                    "type": ["array", "null"],
+                    "default": null,
+                    "items": {
+                        "$ref": "#/definitions/io.k8s.api.core.v1.VolumeMount"
                     }
-                ]
-            ]
+                }
+            }
         },
         "dags": {
             "description": "DAGs settings.",
