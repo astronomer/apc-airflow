@@ -3282,9 +3282,7 @@ multiNamespaceMode: false
 # (e.g. `workers.resources`). As such, you normally won't need to override this directly, however,
 # you can still provide a completely custom `pod_template_file.yaml` if desired.
 # If not set, a default one is created using `files/pod-template-file.kubernetes-helm-yaml`.
-podTemplate: 
-  volumes: []
-  volumeMounts: []
+podTemplate: ~
 # The following example is NOT functional, but meant to be illustrative of how you can provide a custom
 # `pod_template_file`. You're better off starting with the default in
 # `files/pod-template-file.kubernetes-helm-yaml` and modifying from there.
