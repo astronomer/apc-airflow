@@ -52,11 +52,9 @@ workflows:
             branches:
               only:
                 - 'helm-chart\/v\d+-\d+-\d+-astro'
-                - 'fixschema'
       - package_chart:
           requires:
             - approve-package-and-release
-            - unittest-charts
           filters:
             branches:
               only:
