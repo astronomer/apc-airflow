@@ -9350,28 +9350,16 @@
             "default": false
         },
         "podTemplate": {
-            "description": "Configuration for KubernetesExecutor worker pod template.",
-            "type": ["string", "null"],
+            "description": "The content of ``pod_template_file.yaml`` used for KubernetesExecutor workers (templated). The default (see ``files/pod-template-file.kubernetes-helm-yaml``) already takes into account normal ``workers`` configuration parameters (e.g. ``workers.resources``), so you normally won't need to override this directly.",
+            "type": [
+                "string",
+                "null"
+            ],
             "x-docsSection": "Airflow",
             "default": null,
-            "properties": {
-                "volumes": {
-                    "description": "Additional volumes to attach to KubernetesExecutor worker pods.",
-                    "type": ["array", "null"],
-                    "default": null,
-                    "items": {
-                        "$ref": "#/definitions/io.k8s.api.core.v1.Volume"
-                    }
-                },
-                "volumeMounts": {
-                    "description": "Additional volume mounts to attach to the base container in KubernetesExecutor worker pods.",
-                    "type": ["array", "null"],
-                    "default": null,
-                    "items": {
-                        "$ref": "#/definitions/io.k8s.api.core.v1.VolumeMount"
-                    }
-                }
-            }
+            "examples": [
+                "apiVersion: v1\nkind: Pod\nmetadata:\n  name: placeholder-name\n  labels:\n    tier: airflow\n    component: worker\n    release: {{ .Release.Name }}\nspec:\n  priorityClassName: high-priority\n  containers:\n    - name: base\n    ..."
+            ]
         },
         "dags": {
             "description": "DAGs settings.",
