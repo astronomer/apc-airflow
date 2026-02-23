@@ -48,7 +48,6 @@ workflows:
       - package_and_release_chart:
           requires:
             - approve-package-and-release
-            - unittest-charts
           context:
             - github-repo
           filters:
