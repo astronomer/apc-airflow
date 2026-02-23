@@ -9335,10 +9335,9 @@
         },
         "podTemplate": {
             "description": "Configuration for KubernetesExecutor worker pod template.",
-            "type": ["object", "null"],
+            "type": ["string", "null"],
             "x-docsSection": "Airflow",
             "default": null,
-            "additionalProperties": false,
             "properties": {
                 "volumes": {
                     "description": "Additional volumes to attach to KubernetesExecutor worker pods.",
