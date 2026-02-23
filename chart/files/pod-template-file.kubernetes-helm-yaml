@@ -123,6 +123,9 @@ spec:
         {{- if or .Values.dags.gitSync.enabled .Values.dags.persistence.enabled }}
           {{- include "airflow_dags_mount" . | nindent 8 }}
         {{- end }}
+        {{- if .Values.podTemplateVolumeMounts }}
+          {{- toYaml .Values.podTemplateVolumeMounts | nindent 8 }}
+        {{- end }}
         {{- if .Values.volumeMounts }}
           {{- toYaml .Values.volumeMounts | nindent 8 }}
         {{- end }}
@@ -167,6 +170,9 @@ spec:
         - name: kerberos-ccache
           mountPath: {{ .Values.kerberos.ccacheMountPath | quote }}
           readOnly: false
+        {{- if .Values.podTemplateVolumeMounts }}
+          {{- toYaml .Values.podTemplateVolumeMounts | nindent 8 }}
+        {{- end }}
         {{- if .Values.volumeMounts }}
           {{- toYaml .Values.volumeMounts | nindent 8 }}
         {{- end }}
@@ -213,6 +219,9 @@ spec:
   topologySpreadConstraints: {{- toYaml $topologySpreadConstraints | nindent 4 }}
   serviceAccountName: {{ include "worker.serviceAccountName" . }}
   volumes:
+  {{- if .Values.podTemplateVolumes }}
+    {{- toYaml .Values.podTemplateVolumes | nindent 2 }}
+  {{- end }}
   {{- if .Values.dags.persistence.enabled }}
   - name: dags
     persistentVolumeClaim:
