@@ -572,7 +572,22 @@ class TestWorker:
             ),
         ],
     )
-    def test_logs_persistence_changes_volume(self, log_values, expected_volume):
+    @pytest.mark.parametrize(
+        "log_values, expected_volume, expected_volume_name",
+        [
+            (
+                {"persistence": {"enabled": False, "size": "10Gi"}},
+                {"emptyDir": {"sizeLimit": "10Gi"}},
+                "logs-release-name",
+            ),
+            (
+                {"persistence": {"enabled": True, "existingClaim": "test-claim"}},
+                {"persistentVolumeClaim": {"claimName": "test-claim"}},
+                "logs",
+            ),
+        ],
+    )
+    def test_logs_persistence_changes_volume(self, log_values, expected_volume, expected_volume_name):
         docs = render_chart(
             values={
                 "executor": "CeleryExecutor",
@@ -581,8 +596,7 @@ class TestWorker:
             },
             show_only=["templates/workers/worker-deployment.yaml"],
         )
-
-        assert {"name": "logs-release-name", **expected_volume} in jmespath.search("spec.template.spec.volumes", docs[0])
+        assert {"name": expected_volume_name, **expected_volume} in jmespath.search("spec.template.spec.volumes", docs[0])
 
     def test_worker_resources_are_configurable(self):
         docs = render_chart(
