@@ -582,7 +582,7 @@ class TestWorker:
             show_only=["templates/workers/worker-deployment.yaml"],
         )
 
-        assert {"name": "logs", **expected_volume} in jmespath.search("spec.template.spec.volumes", docs[0])
+        assert {"name": "logs-release-name", **expected_volume} in jmespath.search("spec.template.spec.volumes", docs[0])
 
     def test_worker_resources_are_configurable(self):
         docs = render_chart(
