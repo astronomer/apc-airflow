@@ -555,30 +555,22 @@ class TestWorker:
         assert jmespath.search("spec.template.spec.initContainers[1].restartPolicy", docs[0]) == "Always"
 
     @pytest.mark.parametrize(
-        "log_values, expected_volume",
+        "log_values, expected_volume, expected_volume_name",
         [
-            ({"persistence": {"enabled": False}}, {"emptyDir": {}}),
+            (
+                {"persistence": {"enabled": False}},
+                {"emptyDir": {}},
+                "logs-release-name",
+            ),
             (
                 {"persistence": {"enabled": False}, "emptyDirConfig": {"sizeLimit": "10Gi"}},
                 {"emptyDir": {"sizeLimit": "10Gi"}},
+                "logs-release-name",
             ),
             (
                 {"persistence": {"enabled": True}},
                 {"persistentVolumeClaim": {"claimName": "release-name-logs"}},
-            ),
-            (
-                {"persistence": {"enabled": True, "existingClaim": "test-claim"}},
-                {"persistentVolumeClaim": {"claimName": "test-claim"}},
-            ),
-        ],
-    )
-    @pytest.mark.parametrize(
-        "log_values, expected_volume, expected_volume_name",
-        [
-            (
-                {"persistence": {"enabled": False, "size": "10Gi"}},
-                {"emptyDir": {"sizeLimit": "10Gi"}},
-                "logs-release-name",
+                "logs",
             ),
             (
                 {"persistence": {"enabled": True, "existingClaim": "test-claim"}},
