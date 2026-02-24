@@ -24,22 +24,6 @@
         "Kerberos"
     ],
     "properties": {
-        "podTemplateVolumes":{
-            "description": "Additional volumes to attach to KubernetesExecutor worker pods.",
-            "type": ["array", "null"],
-            "default": null,
-            "items": {
-                "$ref": "#/definitions/io.k8s.api.core.v1.Volume"
-            }
-        },
-        "podTemplateVolumeMounts": {
-            "description": "Additional volume mounts to attach to KubernetesExecutor worker pods.",
-            "type": ["array", "null"],
-            "default": null,
-            "items": {
-                "$ref": "#/definitions/io.k8s.api.core.v1.VolumeMount"
-            }
-        },
         "fullnameOverride": {
             "description": "Provide a name to substitute for the full names of resources",
             "type": "string",
