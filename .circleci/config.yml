@@ -44,14 +44,13 @@ workflows:
             branches:
               only:
                 - '/helm-chart\/v\d+-\d+-\d+-astro/'
-                - 'fixschemac'
       - package_and_release_chart:
           requires:
             - approve-package-and-release
+            - unittest-charts
           context:
             - github-repo
           filters:
             branches:
               only:
                 - '/helm-chart\/v\d+-\d+-\d+-astro/'
-                - 'fixschemac'
