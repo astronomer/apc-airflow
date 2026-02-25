@@ -520,6 +520,14 @@ server_tls_key_file = /etc/pgbouncer/server.key
   {{- printf "%s/logs" .Values.airflowHome | quote }}
 {{- end }}
 
+{{- define "airflow_logs_dir" -}}
+  {{- if semverCompare ">=3.0.0" .Values.airflowVersion }}
+  {{- printf "logs-%s" .Release.Name | quote }}
+  {{- else }}
+  {{- "logs" | quote }}
+  {{- end }}
+{{- end }}
+
 {{- define "airflow_logs_no_quote" -}}
   {{- printf "%s/logs" .Values.airflowHome }}
 {{- end }}
