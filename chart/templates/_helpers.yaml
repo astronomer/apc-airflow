@@ -524,7 +524,7 @@ server_tls_key_file = /etc/pgbouncer/server.key
   {{- if semverCompare ">=3.0.0" .Values.airflowVersion }}
   {{- printf "logs-%s" .Release.Name | quote }}
   {{- else }}
-  {{- "logs" | quote }}
+  {{- "logs" }}
   {{- end }}
 {{- end }}
 
