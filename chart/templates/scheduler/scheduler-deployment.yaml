@@ -258,7 +258,7 @@ spec:
               subPath: pod_template_file.yaml
               readOnly: true
             {{- end }}
-            - name: logs
+            - name: {{ template "airflow_logs_dir" . }}
               mountPath: {{ template "airflow_logs" . }}
             {{- include "airflow_config_mount" . | nindent 12 }}
             {{- if or .Values.webserver.webserverConfig .Values.webserver.webserverConfigConfigMapName }}
@@ -317,7 +317,7 @@ spec:
               {{- tpl (toYaml .Values.scheduler.logGroomerSidecar.env) $ | nindent 12 }}
           {{- end }}
           volumeMounts:
-            - name: logs
+            - name: {{ template "airflow_logs_dir" . }}
               mountPath: {{ template "airflow_logs" . }}
             {{- if .Values.volumeMounts }}
               {{- toYaml .Values.volumeMounts | nindent 12 }}
@@ -365,7 +365,7 @@ spec:
           persistentVolumeClaim:
             claimName: {{ template "airflow_logs_volume_claim" . }}
   {{- else if not $stateful }}
-        - name: logs
+        - name: {{ template "airflow_logs_dir" . }}
           emptyDir: {{- toYaml (default (dict) .Values.logs.emptyDirConfig) | nindent 12 }}
   {{- else }}
   volumeClaimTemplates:
