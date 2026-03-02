@@ -520,7 +520,7 @@ class TestScheduler:
             show_only=["templates/scheduler/scheduler-deployment.yaml"],
         )
 
-        assert {"name": "logs", **expected_volume} in jmespath.search("spec.template.spec.volumes", docs[0])
+        assert {"name": "logs-release-name", **expected_volume} in jmespath.search("spec.template.spec.volumes", docs[0])
 
     def test_scheduler_security_contexts_are_configurable(self):
         docs = render_chart(

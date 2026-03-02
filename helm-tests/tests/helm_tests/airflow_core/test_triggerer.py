@@ -482,7 +482,7 @@ class TestTriggerer:
         )
 
         assert jmespath.search("spec.template.spec.volumes[1]", docs[0]) == {
-            "name": "logs",
+            "name": "logs-release-name",
             **expected_volume,
         }
 
