@@ -455,24 +455,31 @@ class TestTriggerer:
         )
 
     @pytest.mark.parametrize(
-        "log_values, expected_volume",
+        "log_values, expected_volume, expected_volume_name",
         [
-            ({"persistence": {"enabled": False}}, {"emptyDir": {}}),
+            (
+                {"persistence": {"enabled": False}},
+                {"emptyDir": {}},
+                "logs-release-name",
+            ),
             (
                 {"persistence": {"enabled": False}, "emptyDirConfig": {"sizeLimit": "10Gi"}},
                 {"emptyDir": {"sizeLimit": "10Gi"}},
+                "logs-release-name",
             ),
             (
                 {"persistence": {"enabled": True}},
                 {"persistentVolumeClaim": {"claimName": "release-name-logs"}},
+                "logs",
             ),
             (
                 {"persistence": {"enabled": True, "existingClaim": "test-claim"}},
                 {"persistentVolumeClaim": {"claimName": "test-claim"}},
+                "logs",
             ),
         ],
     )
-    def test_logs_persistence_changes_volume(self, log_values, expected_volume):
+    def test_logs_persistence_changes_volume(self, log_values, expected_volume, expected_volume_name):
         docs = render_chart(
             values={
                 "triggerer": {"persistence": {"enabled": False}},
@@ -482,7 +489,7 @@ class TestTriggerer:
         )
 
         assert jmespath.search("spec.template.spec.volumes[1]", docs[0]) == {
-            "name": "logs-release-name",
+            "name": expected_volume_name,
             **expected_volume,
         }
 
