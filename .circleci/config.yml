@@ -54,4 +54,3 @@ workflows:
             branches:
               only:
                 - '/helm-chart\/v\d+-\d+-\d+-astro/'
-                - fixschedulerlog
