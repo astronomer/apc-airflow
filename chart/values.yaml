@@ -493,6 +493,7 @@ extraEnvFrom: ~
 #       name: '{{ .Release.Name }}-airflow-variables'
 
 # Airflow database & redis config
+usePrimary: ~
 data:
   # If secret names are provided, use those secrets
   # These secrets must be created manually, eg:

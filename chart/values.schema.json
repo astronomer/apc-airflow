@@ -26,7 +26,10 @@
     "properties": {
         "usePrimary": {
             "description": "To enable support for database connection switching. When set to true, the chart will use the primary database connection parameters. When set to false, the chart will use the inactive database connection parameters. This allows users to switch between two database connections (e.g. for blue-green deployments or canary releases) without changing the connection parameters in the values file, but instead by just switching which connection is active in Airflow.",
-            "type": "boolean",
+            "type": [
+                "null",
+                "boolean"
+            ],
             "x-docsSection": null,
             "default": false
         },
