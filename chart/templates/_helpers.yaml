@@ -411,7 +411,11 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "airflow.usePrimary" -}}
-{{- hasKey .Values "usePrimary" | ternary .Values.usePrimary true -}}
+{{- if kindIs "bool" .Values.usePrimary -}}
+{{- .Values.usePrimary -}}
+{{- else -}}
+{{- true -}}
+{{- end -}}
 {{- end -}}
 
 {{- define "airflow_metadata_secret" -}}
