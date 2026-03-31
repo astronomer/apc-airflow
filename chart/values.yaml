@@ -493,6 +493,8 @@ extraEnvFrom: ~
 #       name: '{{ .Release.Name }}-airflow-variables'
 
 # Airflow database & redis config
+airflowDbRef:
+  activeConnectionRef: ~
 data:
   # If secret names are provided, use those secrets
   # These secrets must be created manually, eg:
@@ -543,6 +545,11 @@ data:
   # Add custom annotations to the broker url secret
   brokerUrlSecretAnnotations: {}
 
+  # DR Database Connection Mapping
+  inactiveMetadataConnection: {}
+  inactiveResultBackendConnection: ~
+  inactiveMetadataSecretName: ~
+  inactiveResultBackendSecretName: ~
 # Fernet key settings
 # Note: fernetKey can only be set during install, not upgrade
 fernetKey: ~
