@@ -1277,8 +1277,24 @@
                     ],
                     "default": null
                 },
+                "inactiveMetadataSecretName": {
+                    "description": "Inactive metadata connection string secret.",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
                 "resultBackendSecretName": {
                     "description": "Result backend connection string secret.",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                },
+                 "inactiveResultBackendSecretName": {
+                    "description": "Inactive result backend connection string secret.",
                     "type": [
                         "string",
                         "null"
@@ -1347,8 +1363,119 @@
                         }
                     }
                 },
+                "inactiveMetadataConnection": {
+                    "description": "Inactive metadata connection configuration.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "user": {
+                            "description": "The database user.",
+                            "type": "string",
+                            "default": "postgres"
+                        },
+                        "pass": {
+                            "description": "The user's password.",
+                            "type": "string",
+                            "default": "postgres"
+                        },
+                        "protocol": {
+                            "description": "The database protocol.",
+                            "type": "string",
+                            "default": "postgresql"
+                        },
+                        "host": {
+                            "description": "The database host.",
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "default": null
+                        },
+                        "port": {
+                            "description": "The database port.",
+                            "type": "integer",
+                            "default": 5432
+                        },
+                        "db": {
+                            "description": "The name of the database.",
+                            "type": "string",
+                            "default": "postgres"
+                        },
+                        "sslmode": {
+                            "description": "The database SSL parameter.",
+                            "type": "string",
+                            "default": "disable"
+                        },
+                        "secretAnnotations": {
+                            "description": "Annotations to add to the metadata connection secret.",
+                            "type": "object",
+                            "default": {},
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "resultBackendConnection": {
                     "description": "Result backend connection configuration.",
+                    "type": [
+                        "object",
+                        "null"
+                    ],
+                    "default": null,
+                    "additionalProperties": false,
+                    "properties": {
+                        "user": {
+                            "description": "The database user.",
+                            "type": "string",
+                            "default": null
+                        },
+                        "pass": {
+                            "description": "The database password.",
+                            "type": "string",
+                            "default": null
+                        },
+                        "protocol": {
+                            "description": "The database protocol.",
+                            "type": "string",
+                            "default": null
+                        },
+                        "host": {
+                            "description": "The database host.",
+                            "type": [
+                                "string",
+                                "null"
+                            ],
+                            "default": null
+                        },
+                        "port": {
+                            "description": "The database port.",
+                            "type": "integer",
+                            "default": null
+                        },
+                        "db": {
+                            "description": "The name of the database.",
+                            "type": "string",
+                            "default": null
+                        },
+                        "sslmode": {
+                            "description": "The database SSL parameter.",
+                            "type": "string",
+                            "default": null
+                        }
+                    },
+                    "required": [
+                        "user",
+                        "pass",
+                        "protocol",
+                        "host",
+                        "port",
+                        "db",
+                        "sslmode"
+                    ]
+                },
+                "inactiveResultBackendConnection": {
+                    "description": "Inactive result backend connection configuration.",
                     "type": [
                         "object",
                         "null"
