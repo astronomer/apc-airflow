@@ -410,22 +410,30 @@ If release name contains chart name it will be used as a full name.
   {{- default (printf "%s-redis-password" .Release.Name) .Values.redis.passwordSecretName }}
 {{- end }}
 
-{{- define "airflow.usePrimary" -}}
-{{- if kindIs "bool" .Values.usePrimary -}}
-{{- .Values.usePrimary -}}
+{{/*
+  Returns "true" for primary DB values (metadataConnection, resultBackendConnection, etc.),
+  "false" for inactive* values when airflowDbRef.activeConnectionRef equals <Release.Name>-inactive.
+  <Release.Name>-active or any other value (including null/empty) selects primary connections.
+*/}}
+{{- define "airflow.dbRefUsesPrimaryConnections" -}}
+{{- $dbRef := .Values.airflowDbRef | default dict -}}
+{{- $active := index $dbRef "activeConnectionRef" | default "" | toString -}}
+{{- $inactiveExpected := printf "%s-inactive" .Release.Name | toString -}}
+{{- if eq $active $inactiveExpected -}}
+false
 {{- else -}}
-{{- true -}}
+true
 {{- end -}}
 {{- end -}}
 
 {{- define "airflow_metadata_secret" -}}
-  {{- $usePrimary := eq (include "airflow.usePrimary" .) "true" }}
+  {{- $usePrimary := eq (include "airflow.dbRefUsesPrimaryConnections" .) "true" }}
   {{- $secretName := ternary .Values.data.metadataSecretName .Values.data.inactiveMetadataSecretName $usePrimary }}
   {{- default (printf "%s-metadata" (include "airflow.fullname" .)) $secretName }}
 {{- end }}
 
 {{- define "airflow_result_backend_secret" -}}
-  {{- $usePrimary := eq (include "airflow.usePrimary" .) "true" }}
+  {{- $usePrimary := eq (include "airflow.dbRefUsesPrimaryConnections" .) "true" }}
   {{- $secretName := ternary .Values.data.resultBackendSecretName .Values.data.inactiveResultBackendSecretName $usePrimary }}
   {{- default (printf "%s-result-backend" (include "airflow.fullname" .)) $secretName }}
 {{- end }}
@@ -484,7 +492,7 @@ If release name contains chart name it will be used as a full name.
 {{- end }}
 
 {{- define "pgbouncer_config" -}}
-{{ $usePrimary := eq (include "airflow.usePrimary" .) "true" }}
+{{ $usePrimary := eq (include "airflow.dbRefUsesPrimaryConnections" .) "true" }}
 {{ $metadataConnection := ternary .Values.data.metadataConnection .Values.data.inactiveMetadataConnection $usePrimary }}
 {{ $resultBackendConnection := ternary .Values.data.resultBackendConnection .Values.data.inactiveResultBackendConnection $usePrimary | default $metadataConnection }}
 {{ $pgMetadataHost := $metadataConnection.host | default (printf "%s-%s.%s" .Release.Name "postgresql" .Release.Namespace) }}
@@ -525,7 +533,7 @@ server_tls_key_file = /etc/pgbouncer/server.key
 {{- end }}
 
 {{ define "pgbouncer_users" }}
-{{- $usePrimary := eq (include "airflow.usePrimary" .) "true" }}
+{{- $usePrimary := eq (include "airflow.dbRefUsesPrimaryConnections" .) "true" }}
 {{- $metadataConnection := ternary .Values.data.metadataConnection .Values.data.inactiveMetadataConnection $usePrimary }}
 {{- $resultBackendConnection := ternary .Values.data.resultBackendConnection .Values.data.inactiveResultBackendConnection $usePrimary | default $metadataConnection }}
 {{ $metadataConnection.user | quote }} {{ $metadataConnection.pass | quote }}

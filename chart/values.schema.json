@@ -24,14 +24,22 @@
         "Kerberos"
     ],
     "properties": {
-        "usePrimary": {
-            "description": "To enable support for database connection switching. When set to true, the chart will use the primary database connection parameters. When set to false, the chart will use the inactive database connection parameters. This allows users to switch between two database connections (e.g. for blue-green deployments or canary releases) without changing the connection parameters in the values file, but instead by just switching which connection is active in Airflow.",
-            "type": [
-                "null",
-                "boolean"
-            ],
+        "airflowDbRef": {
+            "description": "Single active connection id. When activeConnectionRef equals <Release.Name>-inactive, the chart uses inactiveMetadataConnection / inactiveResultBackendConnection and inactive* secret names. For <Release.Name>-active, null/empty, or any other value, primary metadataConnection / resultBackendConnection apply.",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "activeConnectionRef": {
+                    "description": "Set to <Release.Name>-inactive to use inactive DB values; use <Release.Name>-active or null for primary",
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "default": null
+                }
+            },
             "x-docsSection": null,
-            "default": false
+            "default": {}
         },
         "fullnameOverride": {
             "description": "Provide a name to substitute for the full names of resources",
