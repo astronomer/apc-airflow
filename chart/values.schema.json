@@ -7197,6 +7197,22 @@
                         "$ref": "#/definitions/io.k8s.api.core.v1.Container"
                     }
                 },
+                "extraInitContainers": {
+                    "description": "Add additional init containers into Airflow Celery workers and pods created with pod-template-file (templated).",
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "$ref": "#/definitions/io.k8s.api.core.v1.Container"
+                    }
+                },
+                "preAirflowExtraInitContainers": {
+                    "description": "Add additional init containers into Airflow Celery workers and pods created with pod-template-file (templated) that run before any airflow init containers.",
+                    "type": "array",
+                    "default": [],
+                    "items": {
+                        "$ref": "#/definitions/io.k8s.api.core.v1.Container"
+                    }
+                },
                 "extraVolumes": {
                     "description": "Mount additional volumes into the flower pods.",
                     "type": "array",

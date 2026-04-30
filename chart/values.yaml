@@ -2307,6 +2307,13 @@ flower:
 
   # Launch additional containers into the flower pods.
   extraContainers: []
+  # Add additional init containers into Airflow Celery workers
+  # and pods created with pod-template-file (templated).
+  extraInitContainers: []
+  # Add additional init containers into Airflow Celery workers
+  # and pods created with pod-template-file (templated). These
+  # init containers will run before any airflow init containers.
+  preAirflowExtraInitContainers: []
   # Mount additional volumes into the flower pods. It can be templated like in the following example:
   #   extraVolumes:
   #     - name: my-templated-extra-volume
