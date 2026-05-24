@@ -680,6 +680,7 @@ class TestWorker:
     @pytest.mark.parametrize(
         ("airflow_version", "default_cmd"),
         [
+            ("3.2.0", "airflow.providers.celery.executors.celery_executor.app"),
             ("2.7.0", "airflow.providers.celery.executors.celery_executor.app"),
             ("2.6.3", "airflow.executors.celery_executor.app"),
         ],
@@ -694,6 +695,8 @@ class TestWorker:
             "spec.template.spec.containers[0].livenessProbe.exec.command", docs[0]
         )
         assert default_cmd in livenessprobe_cmd[-1]
+        assert "celery@$(python -c 'import socket; print(socket.gethostname())')" in livenessprobe_cmd[-1]
+        assert "celery@$(hostname)" not in livenessprobe_cmd[-1]
 
     @pytest.mark.parametrize(
         "workers_values",

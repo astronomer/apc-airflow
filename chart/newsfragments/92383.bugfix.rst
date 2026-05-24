@@ -1,0 +1,1 @@
+Use Python to read the worker pod hostname in the default Celery worker liveness probe instead of invoking the ``hostname`` binary.
