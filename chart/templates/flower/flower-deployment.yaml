@@ -89,6 +89,13 @@ spec:
       imagePullSecrets:
         - name: {{ template "registry_secret" . }}
       {{- end }}
+      initContainers:
+        {{- if .Values.flower.preAirflowExtraInitContainers }}
+          {{- tpl (toYaml .Values.flower.preAirflowExtraInitContainers) . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.flower.extraInitContainers }}
+          {{- tpl (toYaml .Values.flower.extraInitContainers) . | nindent 8 }}
+        {{- end }}
       containers:
         - name: flower
           image: {{ template "flower_image" . }}
