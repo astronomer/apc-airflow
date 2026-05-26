@@ -178,18 +178,16 @@ spec:
             - name: metrics
               containerPort: {{ .Values.ports.pgbouncerScrape }}
           livenessProbe:
-            exec:
-              command:
-                - pgbouncer_exporter
-                - health
+            httpGet:
+              path: /metrics
+              port: {{ .Values.ports.pgbouncerScrape }}
             initialDelaySeconds: {{ .Values.pgbouncer.metricsExporterSidecar.livenessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.livenessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.livenessProbe.timeoutSeconds }}
           readinessProbe:
-            exec:
-              command:
-                - pgbouncer_exporter
-                - health
+            httpGet:
+              path: /metrics
+              port: {{ .Values.ports.pgbouncerScrape }}
             initialDelaySeconds: {{ .Values.pgbouncer.metricsExporterSidecar.readinessProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.readinessProbe.timeoutSeconds }}
