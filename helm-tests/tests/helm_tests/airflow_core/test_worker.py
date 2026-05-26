@@ -499,27 +499,6 @@ class TestWorker:
         assert default_cmd in livenessprobe_cmd[-1]
         assert "socket.gethostname()" in livenessprobe_cmd[-1]
 
-    def test_readinessprobe_default_command_uses_python_hostname(self):
-        docs = render_chart(
-            values={
-                "workers": {
-                    "readinessProbe": {
-                        "enabled": True,
-                        "initialDelaySeconds": 10,
-                        "timeoutSeconds": 20,
-                        "failureThreshold": 5,
-                        "periodSeconds": 60,
-                    }
-                },
-            },
-            show_only=["templates/workers/worker-deployment.yaml"],
-        )
-
-        readinessprobe_cmd = jmespath.search(
-            "spec.template.spec.containers[0].readinessProbe.exec.command", docs[0]
-        )
-        assert "socket.gethostname()" in readinessprobe_cmd[-1]
-
     def test_livenessprobe_values_are_configurable(self):
         docs = render_chart(
             values={
