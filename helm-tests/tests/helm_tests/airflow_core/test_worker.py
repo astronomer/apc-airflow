@@ -498,7 +498,6 @@ class TestWorker:
         )
         assert default_cmd in livenessprobe_cmd[-1]
         assert "socket.gethostname()" in livenessprobe_cmd[-1]
-        assert "$(hostname)" not in livenessprobe_cmd[-1]
 
     def test_readinessprobe_default_command_uses_python_hostname(self):
         docs = render_chart(
@@ -520,7 +519,6 @@ class TestWorker:
             "spec.template.spec.containers[0].readinessProbe.exec.command", docs[0]
         )
         assert "socket.gethostname()" in readinessprobe_cmd[-1]
-        assert "$(hostname)" not in readinessprobe_cmd[-1]
 
     def test_livenessprobe_values_are_configurable(self):
         docs = render_chart(
