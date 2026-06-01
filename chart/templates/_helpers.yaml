@@ -1062,18 +1062,22 @@ Where `.` is the global variables scope and `.Values.webserver` the local variab
 {{- define "airflowPodSecurityContext" -}}
   {{- $ := index . 0 -}}
   {{- with index . 1 }}
+    {{- $ctx := dict -}}
     {{- if .securityContexts.pod -}}
-      {{ toYaml .securityContexts.pod | print }}
+      {{- $ctx = .securityContexts.pod -}}
     {{- else if .securityContext -}}
-      {{ toYaml .securityContext | print }}
+      {{- $ctx = .securityContext -}}
     {{- else if $.Values.securityContexts.pod -}}
-      {{ toYaml $.Values.securityContexts.pod | print }}
+      {{- $ctx = $.Values.securityContexts.pod -}}
     {{- else if $.Values.securityContext -}}
-      {{ toYaml $.Values.securityContext | print }}
+      {{- $ctx = $.Values.securityContext -}}
     {{- else -}}
-runAsUser: {{ $.Values.uid }}
-fsGroup: {{ $.Values.gid }}
-    {{- end }}
+      {{- $ctx = dict "runAsUser" $.Values.uid "fsGroup" $.Values.gid -}}
+    {{- end -}}
+    {{- if $.Values.openshift.enabled -}}
+      {{- $ctx = omit $ctx "runAsUser" "runAsGroup" "fsGroup" -}}
+    {{- end -}}
+{{ toYaml $ctx | print }}
   {{- end }}
 {{- end }}
 
@@ -1143,7 +1147,9 @@ Where `.` is the global variables scope and `.Values.workers` the local variable
 {{- define "airflowPodSecurityContextsIds" -}}
   {{- $ := index . 0 -}}
   {{- with index . 1 }}
-    {{- if .securityContexts.pod -}}
+    {{- if $.Values.openshift.enabled -}}
+:0
+    {{- else if .securityContexts.pod -}}
       {{ pluck "runAsUser" .securityContexts.pod | first | default $.Values.uid }}:{{ pluck "fsGroup" .securityContexts.pod | first | default $.Values.gid }}
     {{- else if $.Values.securityContext -}}
       {{ pluck "runAsUser" $.Values.securityContext | first | default $.Values.uid }}:{{ pluck "fsGroup" $.Values.securityContext | first | default $.Values.gid }}
@@ -1173,10 +1179,17 @@ Where `.` is the global variables scope and `.Values.webserver` the local variab
 {{- define "containerSecurityContext" -}}
   {{- $ := index . 0 -}}
   {{- with index . 1 }}
+    {{- $ctx := dict -}}
     {{- if .securityContexts.container -}}
-      {{ toYaml .securityContexts.container | print }}
+      {{- $ctx = .securityContexts.container -}}
     {{- else if $.Values.securityContexts.containers -}}
-      {{ toYaml $.Values.securityContexts.containers | print }}
+      {{- $ctx = $.Values.securityContexts.containers -}}
+    {{- end -}}
+    {{- if $ctx -}}
+      {{- if $.Values.openshift.enabled -}}
+        {{- $ctx = omit $ctx "runAsUser" "runAsGroup" "fsGroup" -}}
+      {{- end -}}
+{{ toYaml $ctx | print }}
     {{- else -}}
 allowPrivilegeEscalation: false
 capabilities:
