@@ -26,7 +26,7 @@
 {{- $tolerations := or .Values.pgbouncer.tolerations .Values.tolerations }}
 {{- $topologySpreadConstraints := or .Values.pgbouncer.topologySpreadConstraints .Values.topologySpreadConstraints }}
 {{- $revisionHistoryLimit := or .Values.pgbouncer.revisionHistoryLimit .Values.revisionHistoryLimit }}
-{{- $securityContext := include "localPodSecurityContext" .Values.pgbouncer }}
+{{- $securityContext := include "localPodSecurityContext" (list . .Values.pgbouncer) }}
 {{- $containerSecurityContext := include "externalContainerSecurityContext" .Values.pgbouncer }}
 {{- $containerSecurityContextMetricsExporter := include "externalContainerSecurityContext" .Values.pgbouncer.metricsExporterSidecar }}
 {{- $containerLifecycleHooks := .Values.pgbouncer.containerLifecycleHooks }}
