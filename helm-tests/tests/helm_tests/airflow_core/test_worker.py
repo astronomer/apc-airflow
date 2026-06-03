@@ -497,6 +497,7 @@ class TestWorker:
             "spec.template.spec.containers[0].livenessProbe.exec.command", docs[0]
         )
         assert default_cmd in livenessprobe_cmd[-1]
+        assert "socket.gethostname()" in livenessprobe_cmd[-1]
 
     def test_livenessprobe_values_are_configurable(self):
         docs = render_chart(
