@@ -545,6 +545,41 @@ class TestPgbouncerConfig:
         assert "pool_size=12" not in ini
         assert "pool_size=7" not in ini
 
+    def test_databases_pool_size_not_suppressed_by_reserve_pool_size(self):
+        # A key that merely contains the substring "pool_size" (e.g.
+        # reserve_pool_size) must not suppress the structured pool_size.
+        values = {
+            "pgbouncer": {
+                "enabled": True,
+                "metadataPoolSize": 12,
+                "resultBackendPoolSize": 7,
+                "extraIniMetadata": "reserve_pool_size = 5",
+                "extraIniResultBackend": "reserve_pool_size = 3",
+            },
+            "data": {
+                "metadataConnection": {"host": "meta_host", "db": "meta_db", "port": 1111},
+                "resultBackendConnection": {
+                    "protocol": "postgresql",
+                    "host": "rb_host",
+                    "user": "someuser",
+                    "pass": "someuser",
+                    "db": "rb_db",
+                    "port": 2222,
+                    "sslmode": "disabled",
+                },
+            },
+        }
+        ini = self._get_pgbouncer_ini(values)
+
+        assert (
+            "release-name-metadata = host=meta_host dbname=meta_db port=1111 pool_size=12 reserve_pool_size = 5"
+            in ini
+        )
+        assert (
+            "release-name-result-backend = host=rb_host dbname=rb_db port=2222 pool_size=7 reserve_pool_size = 3"
+            in ini
+        )
+
     def test_config_defaults(self):
         ini = self._get_pgbouncer_ini({"pgbouncer": {"enabled": True}})
 
