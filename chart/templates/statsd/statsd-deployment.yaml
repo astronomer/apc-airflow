@@ -64,7 +64,7 @@ spec:
         {{- with .Values.labels }}
           {{- toYaml . | nindent 8 }}
         {{- end }}
-      {{- if or .Values.statsd.extraMappings .Values.statsd.podAnnotations }}
+      {{- if or .Values.statsd.overrideMappings .Values.statsd.extraMappings .Values.statsd.podAnnotations }}
       annotations:
         checksum/statsd-config: {{ include (print $.Template.BasePath "/configmaps/statsd-configmap.yaml") . | sha256sum }}
         {{- if .Values.statsd.podAnnotations }}

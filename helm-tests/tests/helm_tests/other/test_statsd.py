@@ -284,11 +284,15 @@ class TestStatsd:
         }
         docs = render_chart(
             values={"statsd": {"enabled": True, "overrideMappings": [override_mapping]}},
-            show_only=["templates/configmaps/statsd-configmap.yaml"],
+            show_only=["templates/configmaps/statsd-configmap.yaml",
+                       "templates/statsd/statsd-deployment.yaml"],
         )
 
         mappings_yml = jmespath.search('data."mappings.yml"', docs[0])
         mappings_yml_obj = yaml.safe_load(mappings_yml)
+
+        annotations = jmespath.search("spec.template.metadata.annotations", docs[1])
+        assert "checksum/statsd-config" in annotations
 
         assert len(mappings_yml_obj["mappings"]) == 1
         assert mappings_yml_obj["mappings"][0]["name"] == "airflow_pool_queued_slots"
