@@ -732,13 +732,18 @@ class TestWebserverDeployment:
             "runAsNonRoot": True,
         }
 
-    def test_webserver_resources_are_not_added_by_default(self):
+    def test_webserver_resources_have_default(self):
         docs = render_chart(
             values={"airflowVersion": "2.10.5"},
             show_only=["templates/webserver/webserver-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
-        assert jmespath.search("spec.template.spec.initContainers[0].resources", docs[0]) == {}
+        expected_resources = {
+            "limits": {"cpu": "1", "memory": "2Gi"},
+            "requests": {"cpu": "500m", "memory": "1Gi"},
+        }
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == expected_resources
+        # wait-for-airflow-migrations shares webserver.resources with the main container
+        assert jmespath.search("spec.template.spec.initContainers[0].resources", docs[0]) == expected_resources
 
     @pytest.mark.parametrize(
         "airflow_version, expected_strategy",

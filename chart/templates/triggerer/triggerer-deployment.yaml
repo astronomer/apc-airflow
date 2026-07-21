@@ -237,6 +237,20 @@ spec:
                     {{- include "triggerer_readiness_check_command" . | indent 14 }}
                   {{- end }}
           {{- end }}
+          {{- if .Values.triggerer.startupProbe }}
+          startupProbe:
+              initialDelaySeconds: {{ .Values.triggerer.startupProbe.initialDelaySeconds }}
+              timeoutSeconds: {{ .Values.triggerer.startupProbe.timeoutSeconds }}
+              failureThreshold: {{ .Values.triggerer.startupProbe.failureThreshold }}
+              periodSeconds: {{ .Values.triggerer.startupProbe.periodSeconds }}
+              exec:
+                command:
+                  {{- if .Values.triggerer.startupProbe.command }}
+                    {{- toYaml .Values.triggerer.startupProbe.command | nindent 16 }}
+                  {{- else }}
+                    {{- include "triggerer_startup_check_command" . | indent 14 }}
+                  {{- end }}
+          {{- end }}
         {{- /* Airflow version 2.6.0 is when triggerer logs serve introduced */ -}}
           {{- if semverCompare ">=2.6.0" .Values.airflowVersion }}
           ports:

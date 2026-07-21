@@ -271,12 +271,15 @@ class TestFlowerDeployment:
         )
         assert jmespath.search("spec.template.spec.containers[0].resources.requests.cpu", docs[0]) == "300m"
 
-    def test_flower_resources_are_not_added_by_default(self):
+    def test_flower_resources_have_default(self):
         docs = render_chart(
             values={"flower": {"enabled": True}},
             show_only=["templates/flower/flower-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "200m", "memory": "256Mi"},
+            "requests": {"cpu": "100m", "memory": "128Mi"},
+        }
 
     def test_should_add_extra_containers(self):
         docs = render_chart(

@@ -491,12 +491,17 @@ class TestAPIServerDeployment:
                 show_only=["templates/api-server/api-server-deployment.yaml"],
             )
 
-    def test_api_server_resources_are_not_added_by_default(self):
+    def test_api_server_resources_have_default(self):
         docs = render_chart(
             show_only=["templates/api-server/api-server-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
-        assert jmespath.search("spec.template.spec.initContainers[0].resources", docs[0]) == {}
+        expected_resources = {
+            "limits": {"cpu": "1", "memory": "2Gi"},
+            "requests": {"cpu": "500m", "memory": "1Gi"},
+        }
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == expected_resources
+        # wait-for-airflow-migrations shares apiServer.resources with the main container
+        assert jmespath.search("spec.template.spec.initContainers[0].resources", docs[0]) == expected_resources
 
     @pytest.mark.parametrize(
         ("airflow_version", "strategy", "expected_strategy"),

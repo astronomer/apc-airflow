@@ -1815,6 +1815,48 @@
                         }
                     }
                 },
+                "startupProbe": {
+                    "description": "Startup probe configuration for worker containers.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "enabled": {
+                            "description": "Enable startup probe for celery workers.",
+                            "type": "boolean",
+                            "default": true
+                        },
+                        "initialDelaySeconds": {
+                            "description": "Number of seconds after the container has started before startup probes are initiated.",
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "timeoutSeconds": {
+                            "description": "Number of seconds after which the probe times out. Minimum value is 1 seconds.",
+                            "type": "integer",
+                            "default": 20
+                        },
+                        "failureThreshold": {
+                            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Minimum value is 1.",
+                            "type": "integer",
+                            "default": 5
+                        },
+                        "periodSeconds": {
+                            "description": "How often (in seconds) to perform the probe. Minimum value is 1.",
+                            "type": "integer",
+                            "default": 60
+                        },
+                        "command": {
+                            "description": "Command for startupProbe",
+                            "type": [
+                                "array",
+                                "null"
+                            ],
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
                 "updateStrategy": {
                     "description": "Specifies the strategy used to replace old Airflow Celery worker pods by new ones when deployed as a StatefulSet.",
                     "type": [
@@ -3469,6 +3511,47 @@
                         }
                     }
                 },
+                "startupProbe": {
+                    "description": "Startup probe configuration for triggerer.",
+                    "type": "object",
+                    "default": {},
+                    "additionalProperties": false,
+                    "properties": {
+                        "initialDelaySeconds": {
+                            "description": "Number of seconds after the container has started before startup probes are initiated.",
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "timeoutSeconds": {
+                            "description": "Number of seconds after which the probe times out. Minimum value is 1 seconds.",
+                            "type": "integer",
+                            "default": 20
+                        },
+                        "failureThreshold": {
+                            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Minimum value is 1.",
+                            "type": "integer",
+                            "default": 5
+                        },
+                        "periodSeconds": {
+                            "description": "How often (in seconds) to perform the probe. Minimum value is 1.",
+                            "type": "integer",
+                            "default": 60
+                        },
+                        "command": {
+                            "description": "Command for startupProbe",
+                            "type": [
+                                "array",
+                                "null"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
                 "replicas": {
                     "description": "Number of triggerers to run.",
                     "type": "integer",
@@ -4089,6 +4172,46 @@
                         },
                         "command": {
                             "description": "Command for readinessProbe",
+                            "type": [
+                                "array",
+                                "null"
+                            ],
+                            "items": {
+                                "type": [
+                                    "string",
+                                    "null"
+                                ]
+                            }
+                        }
+                    }
+                },
+                "startupProbe": {
+                    "description": "Startup probe configuration for dag processor.",
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "initialDelaySeconds": {
+                            "description": "Number of seconds after the container has started before startup probes are initiated.",
+                            "type": "integer",
+                            "default": 10
+                        },
+                        "timeoutSeconds": {
+                            "description": "Number of seconds after which the probe times out. Minimum value is 1 seconds.",
+                            "type": "integer",
+                            "default": 20
+                        },
+                        "failureThreshold": {
+                            "description": "Minimum consecutive failures for the probe to be considered failed after having succeeded. Minimum value is 1.",
+                            "type": "integer",
+                            "default": 5
+                        },
+                        "periodSeconds": {
+                            "description": "How often (in seconds) to perform the probe. Minimum value is 1.",
+                            "type": "integer",
+                            "default": 60
+                        },
+                        "command": {
+                            "description": "Command for startupProbe",
                             "type": [
                                 "array",
                                 "null"
@@ -8390,6 +8513,28 @@
                                 }
                             }
                         },
+                        "startupProbe": {
+                            "description": "StartupProbe configurations for ``metricsExporterSidecar``",
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "initialDelaySeconds": {
+                                    "description": "Metrics Exporter startup probe initial delay",
+                                    "type": "integer",
+                                    "default": 10
+                                },
+                                "periodSeconds": {
+                                    "description": "Metrics Exporter startup probe frequency",
+                                    "type": "integer",
+                                    "default": 10
+                                },
+                                "timeoutSeconds": {
+                                    "description": "Metrics Exporter startup probe command timeout",
+                                    "type": "integer",
+                                    "default": 1
+                                }
+                            }
+                        },
                         "extraVolumeMounts": {
                             "description": "Mount additional volumes into PgBouncer Metrics Exporter.",
                             "type": "array",
@@ -8724,6 +8869,11 @@
                 },
                 "readinessProbe": {
                     "description": "Readiness probe configuration for Redis.",
+                    "type": "object",
+                    "$ref": "#/definitions/io.k8s.api.core.v1.Probe"
+                },
+                "startupProbe": {
+                    "description": "Startup probe configuration for Redis.",
                     "type": "object",
                     "$ref": "#/definitions/io.k8s.api.core.v1.Probe"
                 },
@@ -9665,6 +9815,11 @@
                         },
                         "readinessProbe": {
                             "description": "Readiness probe configuration for git sync container.",
+                            "type": "object",
+                            "$ref": "#/definitions/io.k8s.api.core.v1.Probe"
+                        },
+                        "startupProbe": {
+                            "description": "Startup probe configuration for git sync container.",
                             "type": "object",
                             "$ref": "#/definitions/io.k8s.api.core.v1.Probe"
                         },

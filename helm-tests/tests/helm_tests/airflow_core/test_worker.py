@@ -537,6 +537,63 @@ class TestWorker:
         livenessprobe = jmespath.search("spec.template.spec.containers[0].livenessProbe", docs[0])
         assert livenessprobe is None
 
+    @pytest.mark.parametrize(
+        "airflow_version, default_cmd",
+        [
+            ("2.7.0", "airflow.providers.celery.executors.celery_executor.app"),
+            ("2.6.3", "airflow.executors.celery_executor.app"),
+        ],
+    )
+    def test_startupprobe_default_command(self, airflow_version, default_cmd):
+        docs = render_chart(
+            values={"airflowVersion": airflow_version},
+            show_only=["templates/workers/worker-deployment.yaml"],
+        )
+
+        startupprobe_cmd = jmespath.search(
+            "spec.template.spec.containers[0].startupProbe.exec.command", docs[0]
+        )
+        assert default_cmd in startupprobe_cmd[-1]
+        assert "socket.gethostname()" in startupprobe_cmd[-1]
+
+    def test_startupprobe_values_are_configurable(self):
+        docs = render_chart(
+            values={
+                "workers": {
+                    "startupProbe": {
+                        "initialDelaySeconds": 111,
+                        "timeoutSeconds": 222,
+                        "failureThreshold": 333,
+                        "periodSeconds": 444,
+                        "command": ["sh", "-c", "echo", "wow such test"],
+                    }
+                },
+            },
+            show_only=["templates/workers/worker-deployment.yaml"],
+        )
+
+        startupprobe = jmespath.search("spec.template.spec.containers[0].startupProbe", docs[0])
+        assert startupprobe == {
+            "initialDelaySeconds": 111,
+            "timeoutSeconds": 222,
+            "failureThreshold": 333,
+            "periodSeconds": 444,
+            "exec": {
+                "command": ["sh", "-c", "echo", "wow such test"],
+            },
+        }
+
+    def test_disable_startupprobe(self):
+        docs = render_chart(
+            values={
+                "workers": {"startupProbe": {"enabled": False}},
+            },
+            show_only=["templates/workers/worker-deployment.yaml"],
+        )
+
+        startupprobe = jmespath.search("spec.template.spec.containers[0].startupProbe", docs[0])
+        assert startupprobe is None
+
     def test_extra_init_container_restart_policy_is_configurable(self):
         docs = render_chart(
             values={
@@ -627,11 +684,14 @@ class TestWorker:
             jmespath.search("spec.template.spec.initContainers[0].resources.requests.cpu", docs[0]) == "300m"
         )
 
-    def test_worker_resources_are_not_added_by_default(self):
+    def test_worker_resources_have_default(self):
         docs = render_chart(
             show_only=["templates/workers/worker-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "1", "memory": "2Gi"},
+            "requests": {"cpu": "500m", "memory": "1Gi"},
+        }
 
     def test_no_airflow_local_settings(self):
         docs = render_chart(

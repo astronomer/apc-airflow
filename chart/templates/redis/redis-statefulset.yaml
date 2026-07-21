@@ -137,6 +137,22 @@ spec:
                 - redis-cli -a $REDIS_PASSWORD ping
                 {{- end }}
           {{- end }}
+          {{ if .Values.redis.startupProbe }}
+          startupProbe:
+            initialDelaySeconds: {{ .Values.redis.startupProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.redis.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.redis.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.redis.startupProbe.periodSeconds }}
+            exec:
+              command:
+                {{- if .Values.redis.startupProbe.command }}
+                  {{- toYaml .Values.redis.startupProbe.command | nindent 16 }}
+                {{- else }}
+                - sh
+                - -c
+                - redis-cli -a $REDIS_PASSWORD ping
+                {{- end }}
+          {{- end }}
           volumeMounts:
             - name: redis-db
               mountPath: /data

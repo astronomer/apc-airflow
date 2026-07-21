@@ -119,7 +119,10 @@ class TestPodTemplateFile:
                 {"name": "GITSYNC_ONE_TIME", "value": "true"},
             ],
             "volumeMounts": [{"mountPath": "/git", "name": "dags"}],
-            "resources": {},
+            "resources": {
+                "limits": {"cpu": "200m", "memory": "256Mi"},
+                "requests": {"cpu": "100m", "memory": "128Mi"},
+            },
         }
 
     def test_should_not_add_init_container_if_dag_persistence_is_true(self):
@@ -886,13 +889,16 @@ class TestPodTemplateFile:
             },
         }
 
-    def test_empty_resources(self):
+    def test_resources_have_default(self):
         docs = render_chart(
             values={},
             show_only=["templates/pod-template-file.yaml"],
             chart_dir=self.temp_chart_dir,
         )
-        assert jmespath.search("spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "1", "memory": "2Gi"},
+            "requests": {"cpu": "500m", "memory": "1Gi"},
+        }
 
     def test_workers_host_aliases(self):
         docs = render_chart(
