@@ -195,10 +195,9 @@ spec:
             periodSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.readinessProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.readinessProbe.timeoutSeconds }}
           startupProbe:
-            exec:
-              command:
-                - pgbouncer_exporter
-                - health
+            httpGet:
+              path: /metrics
+              port: {{ .Values.ports.pgbouncerScrape }}
             initialDelaySeconds: {{ .Values.pgbouncer.metricsExporterSidecar.startupProbe.initialDelaySeconds }}
             periodSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.startupProbe.periodSeconds }}
             timeoutSeconds: {{ .Values.pgbouncer.metricsExporterSidecar.startupProbe.timeoutSeconds }}
