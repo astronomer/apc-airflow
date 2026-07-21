@@ -110,7 +110,17 @@ class TestGitSyncSchedulerTest:
                 {"name": "GITSYNC_MAX_FAILURES", "value": "70"},
             ],
             "volumeMounts": [{"mountPath": "/git", "name": "dags"}],
-            "resources": {},
+            "resources": {
+                "limits": {"cpu": "200m", "memory": "256Mi"},
+                "requests": {"cpu": "100m", "memory": "128Mi"},
+            },
+            "startupProbe": {
+                "exec": {"command": ["sh", "-c", "test -L /git/repo || test -d /git/repo"]},
+                "initialDelaySeconds": 0,
+                "timeoutSeconds": 20,
+                "failureThreshold": 6,
+                "periodSeconds": 10,
+            },
         }
 
     def test_validate_the_git_sync_container_spec_if_wait_specified(self):
@@ -174,7 +184,17 @@ class TestGitSyncSchedulerTest:
                 {"name": "GITSYNC_MAX_FAILURES", "value": "70"},
             ],
             "volumeMounts": [{"mountPath": "/git", "name": "dags"}],
-            "resources": {},
+            "resources": {
+                "limits": {"cpu": "200m", "memory": "256Mi"},
+                "requests": {"cpu": "100m", "memory": "128Mi"},
+            },
+            "startupProbe": {
+                "exec": {"command": ["sh", "-c", "test -L /git/repo || test -d /git/repo"]},
+                "initialDelaySeconds": 0,
+                "timeoutSeconds": 20,
+                "failureThreshold": 6,
+                "periodSeconds": 10,
+            },
         }
 
     def test_validate_if_ssh_params_are_added(self):

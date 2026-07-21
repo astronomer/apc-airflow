@@ -433,6 +433,41 @@ class TestScheduler:
             "wow such test",
         ]
 
+    def test_readinessprobe_values_are_configurable(self):
+        docs = render_chart(
+            values={
+                "scheduler": {
+                    "readinessProbe": {
+                        "initialDelaySeconds": 111,
+                        "timeoutSeconds": 222,
+                        "failureThreshold": 333,
+                        "periodSeconds": 444,
+                        "command": ["sh", "-c", "echo", "wow such test"],
+                    }
+                },
+            },
+            show_only=["templates/scheduler/scheduler-deployment.yaml"],
+        )
+
+        assert (
+            jmespath.search("spec.template.spec.containers[0].readinessProbe.initialDelaySeconds", docs[0])
+            == 111
+        )
+        assert (
+            jmespath.search("spec.template.spec.containers[0].readinessProbe.timeoutSeconds", docs[0]) == 222
+        )
+        assert (
+            jmespath.search("spec.template.spec.containers[0].readinessProbe.failureThreshold", docs[0])
+            == 333
+        )
+        assert jmespath.search("spec.template.spec.containers[0].readinessProbe.periodSeconds", docs[0]) == 444
+        assert jmespath.search("spec.template.spec.containers[0].readinessProbe.exec.command", docs[0]) == [
+            "sh",
+            "-c",
+            "echo",
+            "wow such test",
+        ]
+
     def test_startupprobe_values_are_configurable(self):
         docs = render_chart(
             values={
@@ -476,6 +511,24 @@ class TestScheduler:
         assert (
             probe_command
             in jmespath.search("spec.template.spec.containers[0].livenessProbe.exec.command", docs[0])[-1]
+        )
+
+    @pytest.mark.parametrize(
+        "airflow_version, probe_command",
+        [
+            ("1.10.14", "from airflow.jobs.scheduler_job import SchedulerJob"),
+            ("2.1.0", "airflow jobs check --job-type SchedulerJob --hostname $(hostname)"),
+            ("2.5.0", "airflow jobs check --job-type SchedulerJob --local"),
+        ],
+    )
+    def test_readinessprobe_command_depends_on_airflow_version(self, airflow_version, probe_command):
+        docs = render_chart(
+            values={"airflowVersion": f"{airflow_version}"},
+            show_only=["templates/scheduler/scheduler-deployment.yaml"],
+        )
+        assert (
+            probe_command
+            in jmespath.search("spec.template.spec.containers[0].readinessProbe.exec.command", docs[0])[-1]
         )
 
     @pytest.mark.parametrize(
@@ -615,11 +668,14 @@ class TestScheduler:
             jmespath.search("spec.template.spec.initContainers[0].resources.requests.cpu", docs[0]) == "300m"
         )
 
-    def test_scheduler_resources_are_not_added_by_default(self):
+    def test_scheduler_resources_have_default(self):
         docs = render_chart(
             show_only=["templates/scheduler/scheduler-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "1", "memory": "2Gi"},
+            "requests": {"cpu": "500m", "memory": "1Gi"},
+        }
 
     def test_no_airflow_local_settings(self):
         docs = render_chart(

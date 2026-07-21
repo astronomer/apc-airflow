@@ -243,14 +243,17 @@ class TestPgbouncer:
         )
         assert jmespath.search("spec.template.spec.containers[0].resources.requests.cpu", docs[0]) == "300m"
 
-    def test_pgbouncer_resources_are_not_added_by_default(self):
+    def test_pgbouncer_resources_have_default(self):
         docs = render_chart(
             values={
                 "pgbouncer": {"enabled": True},
             },
             show_only=["templates/pgbouncer/pgbouncer-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "200m", "memory": "256Mi"},
+            "requests": {"cpu": "100m", "memory": "128Mi"},
+        }
 
     def test_metrics_exporter_resources(self):
         docs = render_chart(

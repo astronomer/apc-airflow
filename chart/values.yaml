@@ -657,6 +657,16 @@ workers:
     # periodSeconds: 60
     # command: ~
 
+  # Wait for at most 1 minute (6*10s) for the worker container to startup.
+  # livenessProbe kicks in after the first successful startupProbe
+  startupProbe:
+    enabled: true
+    initialDelaySeconds: 0
+    failureThreshold: 6
+    periodSeconds: 10
+    timeoutSeconds: 20
+    command: ~
+
   # Update Strategy when Airflow Celery worker is deployed as a StatefulSet
   updateStrategy: ~
   # Update Strategy when Airflow Celery worker is deployed as a Deployment
@@ -801,13 +811,13 @@ workers:
     # Enable kerberos sidecar
     enabled: false
 
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
     # Detailed default security context for kerberos sidecar on container level
     securityContexts:
@@ -820,22 +830,22 @@ workers:
   kerberosInitContainer:
     # Enable kerberos init container
     enabled: false
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
   # Resource configuration for Airflow Celery workers and pods created with pod-template-file
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
   # Grace period for tasks to finish after SIGTERM is sent from kubernetes.
   # It is used by Airflow Celery workers and pod-template-file.
@@ -931,13 +941,13 @@ workers:
     # Frequency to attempt to groom logs (in minutes)
     frequencyMinutes: 15
 
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
     # Detailed default security context for logGroomerSidecar for container level
     securityContexts:
@@ -999,6 +1009,13 @@ scheduler:
   # If the scheduler stops heartbeating for 5 minutes (5*60s) kill the
   # scheduler and let Kubernetes restart it
   livenessProbe:
+    initialDelaySeconds: 10
+    timeoutSeconds: 20
+    failureThreshold: 5
+    periodSeconds: 60
+    command: ~
+
+  readinessProbe:
     initialDelaySeconds: 10
     timeoutSeconds: 20
     failureThreshold: 5
@@ -1074,13 +1091,13 @@ scheduler:
       maxUnavailable: 1
       # minAvailable: 1
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
   # This setting tells kubernetes that its ok to evict
   # when it wants to scale a node down.
@@ -1144,14 +1161,13 @@ scheduler:
     retentionDays: 15
     # frequency to attempt to groom logs, in minutes
     frequencyMinutes: 15
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # Detailed default security context for logGroomerSidecar for container level
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
     securityContexts:
       container: {}
     # container level lifecycle hooks
@@ -1291,13 +1307,13 @@ createUserJob:
 
   env: []
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
 # Airflow database migration job settings
 migrateDatabaseJob:
@@ -1353,13 +1369,13 @@ migrateDatabaseJob:
     # Annotations to add to migrate database job kubernetes service account.
     annotations: {}
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   # Launch additional containers into database migration job
   extraContainers: []
@@ -1511,13 +1527,13 @@ apiServer:
       ports:
         - port: "{{ .Values.ports.apiServer }}"
 
-  resources: {}
-  #   limits:
-  #     cpu: 100m
-  #     memory: 128Mi
-  #   requests:
-  #     cpu: 100m
-  #     memory: 128Mi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
   # Add custom annotations to the apiServer configmap
   configMapAnnotations: {}
@@ -1683,13 +1699,13 @@ webserver:
       ports:
         - port: "{{ .Values.ports.airflowUI }}"
 
-  resources: {}
-  #   limits:
-  #     cpu: 100m
-  #     memory: 128Mi
-  #   requests:
-  #     cpu: 100m
-  #     memory: 128Mi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
   # Create initial user.
   defaultUser:
@@ -1832,6 +1848,22 @@ triggerer:
     periodSeconds: 60
     command: ~
 
+  readinessProbe:
+    initialDelaySeconds: 10
+    timeoutSeconds: 20
+    failureThreshold: 5
+    periodSeconds: 60
+    command: ~
+
+  # Wait for at most 1 minute (6*10s) for the triggerer container to startup.
+  # livenessProbe kicks in after the first successful startupProbe
+  startupProbe:
+    initialDelaySeconds: 0
+    failureThreshold: 6
+    periodSeconds: 10
+    timeoutSeconds: 20
+    command: ~
+
   # Create ServiceAccount
   serviceAccount:
     # default value is true
@@ -1876,13 +1908,13 @@ triggerer:
     # Annotations to add to triggerer volumes
     annotations: {}
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
 
   # Grace period for triggerer to finish after SIGTERM is sent from kubernetes
   terminationGracePeriodSeconds: 60
@@ -1958,14 +1990,13 @@ triggerer:
     retentionDays: 15
     # frequency to attempt to groom logs, in minutes
     frequencyMinutes: 15
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
-    # Detailed default security context for logGroomerSidecar for container level
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
     securityContexts:
       container: {}
     livenessProbe:
@@ -2072,6 +2103,22 @@ dagProcessor:
     periodSeconds: 60
     command: ~
 
+  readinessProbe:
+    initialDelaySeconds: 10
+    timeoutSeconds: 20
+    failureThreshold: 5
+    periodSeconds: 60
+    command: ~
+
+  # Wait for at most 1 minute (6*10s) for the dag processor container to startup.
+  # livenessProbe kicks in after the first successful startupProbe
+  startupProbe:
+    initialDelaySeconds: 0
+    failureThreshold: 6
+    periodSeconds: 10
+    timeoutSeconds: 20
+    command: ~
+
   # Create ServiceAccount
   serviceAccount:
     # default value is true
@@ -2100,13 +2147,13 @@ dagProcessor:
   # container level lifecycle hooks
   containerLifecycleHooks: {}
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: "1"
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
 
   # Grace period for dag processor to finish after SIGTERM is sent from kubernetes
   terminationGracePeriodSeconds: 60
@@ -2170,13 +2217,13 @@ dagProcessor:
     retentionDays: 15
     # frequency to attempt to groom logs, in minutes
     frequencyMinutes: 15
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
     securityContexts:
       container: {}
 
@@ -2242,13 +2289,13 @@ flower:
       ports:
         - port: "{{ .Values.ports.flowerUI }}"
 
-  resources: {}
-  #   limits:
-  #     cpu: 100m
-  #     memory: 128Mi
-  #   requests:
-  #     cpu: 100m
-  #     memory: 128Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   # When not set, the values defined in the global securityContext will be used
   securityContext: {}
@@ -2397,13 +2444,13 @@ statsd:
 
   # Additional network policies as needed
   extraNetworkPolicies: []
-  resources: {}
-  #   limits:
-  #     cpu: 100m
-  #     memory: 128Mi
-  #   requests:
-  #     cpu: 100m
-  #     memory: 128Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   service:
     extraAnnotations: {}
@@ -2521,7 +2568,13 @@ pgbouncer:
   #   requests:
   #     cpu: 100m
   #     memory: 128Mi
-  resources: {}
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   service:
     extraAnnotations: {}
@@ -2591,13 +2644,13 @@ pgbouncer:
 
   metricsExporterSidecar:
     enabled: true
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    resources:
+      limits:
+        cpu: 100m
+        memory: 128Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
     sslmode: "disable"
 
     # supply the name of existing secret with PGBouncer connection URI containing
@@ -2633,6 +2686,11 @@ pgbouncer:
       timeoutSeconds: 1
 
     readinessProbe:
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 1
+
+    startupProbe:
       initialDelaySeconds: 10
       periodSeconds: 10
       timeoutSeconds: 1
@@ -2701,13 +2759,33 @@ redis:
   #   sizeLimit: 1Gi
   #   medium: Memory
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+
+  livenessProbe:
+    initialDelaySeconds: 10
+    timeoutSeconds: 20
+    failureThreshold: 5
+    periodSeconds: 60
+
+  readinessProbe:
+    initialDelaySeconds: 10
+    timeoutSeconds: 20
+    failureThreshold: 5
+    periodSeconds: 60
+
+  # Wait for at most 1 minute (6*10s) for the redis container to startup.
+  # livenessProbe kicks in after the first successful startupProbe
+  startupProbe:
+    initialDelaySeconds: 0
+    failureThreshold: 6
+    periodSeconds: 10
+    timeoutSeconds: 20
 
   # If set use as redis secret. Make sure to also set data.brokerUrlSecretName value.
   passwordSecretName: ~
@@ -2843,13 +2921,13 @@ cleanup:
   # Labels specific to cleanup objects and pods
   labels: {}
 
-  resources: {}
-  #  limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  #  requests:
-  #   cpu: 100m
-  #   memory: 128Mi
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
   # Create ServiceAccount
   serviceAccount:
@@ -3122,6 +3200,21 @@ dags:
     readinessProbe: {}
     livenessProbe: {}
 
+    # Verifies the initial sync has produced the DAGs destination before the container is
+    # considered started; keeps failing liveness/readiness probes elsewhere from firing early.
+    # Deliberately not upstream's httpGet on git-sync's own status server (path: /, port:
+    # httpPort): that only confirms the git-sync process is up, which can be true before any
+    # sync has ever completed. This exec check instead verifies the thing startup actually
+    # needs to know -- that a sync has landed -- so it's a stronger signal despite diverging
+    # from upstream's implementation.
+    startupProbe:
+      exec:
+        command: ["sh", "-c", "test -L /git/repo || test -d /git/repo"]
+      initialDelaySeconds: 0
+      timeoutSeconds: 20
+      failureThreshold: 6
+      periodSeconds: 10
+
     # Mount additional volumes into git-sync. It can be templated like in the following example:
     #   extraVolumeMounts:
     #     - name: my-templated-extra-volume
@@ -3138,13 +3231,13 @@ dags:
     #   sizeLimit: 1Gi
     #   medium: Memory
 
-    resources: {}
-    #  limits:
-    #   cpu: 100m
-    #   memory: 128Mi
-    #  requests:
-    #   cpu: 100m
-    #   memory: 128Mi
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 100m
+        memory: 128Mi
 
 logs:
   # Configuration for empty dir volume (if logs.persistence.enabled == false)

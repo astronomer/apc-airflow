@@ -454,6 +454,111 @@ class TestTriggerer:
             in jmespath.search("spec.template.spec.containers[0].livenessProbe.exec.command", docs[0])[-1]
         )
 
+    def test_readinessprobe_values_are_configurable(self):
+        docs = render_chart(
+            values={
+                "triggerer": {
+                    "readinessProbe": {
+                        "initialDelaySeconds": 111,
+                        "timeoutSeconds": 222,
+                        "failureThreshold": 333,
+                        "periodSeconds": 444,
+                        "command": ["sh", "-c", "echo", "wow such test"],
+                    }
+                },
+            },
+            show_only=["templates/triggerer/triggerer-deployment.yaml"],
+        )
+
+        assert (
+            jmespath.search("spec.template.spec.containers[0].readinessProbe.initialDelaySeconds", docs[0])
+            == 111
+        )
+        assert (
+            jmespath.search("spec.template.spec.containers[0].readinessProbe.timeoutSeconds", docs[0]) == 222
+        )
+        assert (
+            jmespath.search("spec.template.spec.containers[0].readinessProbe.failureThreshold", docs[0])
+            == 333
+        )
+        assert jmespath.search("spec.template.spec.containers[0].readinessProbe.periodSeconds", docs[0]) == 444
+
+        assert jmespath.search("spec.template.spec.containers[0].readinessProbe.exec.command", docs[0]) == [
+            "sh",
+            "-c",
+            "echo",
+            "wow such test",
+        ]
+
+    @pytest.mark.parametrize(
+        "airflow_version, probe_command",
+        [
+            ("2.4.9", "airflow jobs check --job-type TriggererJob --hostname $(hostname)"),
+            ("2.5.0", "airflow jobs check --job-type TriggererJob --local"),
+        ],
+    )
+    def test_readinessprobe_command_depends_on_airflow_version(self, airflow_version, probe_command):
+        docs = render_chart(
+            values={"airflowVersion": f"{airflow_version}"},
+            show_only=["templates/triggerer/triggerer-deployment.yaml"],
+        )
+        assert (
+            probe_command
+            in jmespath.search("spec.template.spec.containers[0].readinessProbe.exec.command", docs[0])[-1]
+        )
+
+    def test_startupprobe_values_are_configurable(self):
+        docs = render_chart(
+            values={
+                "triggerer": {
+                    "startupProbe": {
+                        "initialDelaySeconds": 111,
+                        "timeoutSeconds": 222,
+                        "failureThreshold": 333,
+                        "periodSeconds": 444,
+                        "command": ["sh", "-c", "echo", "wow such test"],
+                    }
+                },
+            },
+            show_only=["templates/triggerer/triggerer-deployment.yaml"],
+        )
+
+        assert (
+            jmespath.search("spec.template.spec.containers[0].startupProbe.initialDelaySeconds", docs[0])
+            == 111
+        )
+        assert (
+            jmespath.search("spec.template.spec.containers[0].startupProbe.timeoutSeconds", docs[0]) == 222
+        )
+        assert (
+            jmespath.search("spec.template.spec.containers[0].startupProbe.failureThreshold", docs[0]) == 333
+        )
+        assert jmespath.search("spec.template.spec.containers[0].startupProbe.periodSeconds", docs[0]) == 444
+
+        assert jmespath.search("spec.template.spec.containers[0].startupProbe.exec.command", docs[0]) == [
+            "sh",
+            "-c",
+            "echo",
+            "wow such test",
+        ]
+
+    @pytest.mark.parametrize(
+        "airflow_version, probe_command",
+        [
+            ("2.4.9", "airflow jobs check --job-type TriggererJob --hostname $(hostname)"),
+            ("2.5.0", "airflow jobs check --job-type TriggererJob --local"),
+        ],
+    )
+    def test_startupprobe_command_depends_on_airflow_version(self, airflow_version, probe_command):
+        docs = render_chart(
+            values={"airflowVersion": f"{airflow_version}"},
+            show_only=["templates/triggerer/triggerer-deployment.yaml"],
+        )
+        assert (
+            probe_command
+            in jmespath.search("spec.template.spec.containers[0].startupProbe.exec.command", docs[0])[-1]
+        )
+
     @pytest.mark.parametrize(
         "log_values, expected_volume, expected_volume_name",
         [
@@ -525,11 +630,14 @@ class TestTriggerer:
             jmespath.search("spec.template.spec.initContainers[0].resources.requests.cpu", docs[0]) == "300m"
         )
 
-    def test_resources_are_not_added_by_default(self):
+    def test_resources_have_default(self):
         docs = render_chart(
             show_only=["templates/triggerer/triggerer-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "500m", "memory": "1Gi"},
+            "requests": {"cpu": "250m", "memory": "512Mi"},
+        }
 
     @pytest.mark.parametrize(
         "persistence, update_strategy, expected_update_strategy",

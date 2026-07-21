@@ -92,11 +92,12 @@ class TestKerberos:
         assert jmespath.search("spec.template.spec.containers[2].resources.limits.cpu", docs[0]) == "201m"
         assert jmespath.search("spec.template.spec.containers[2].resources.limits.memory", docs[0]) == "201Mi"
 
-    def test_keberos_sidecar_resources_are_not_added_by_default(self):
+    def test_kerberos_sidecar_is_not_added_by_default(self):
         docs = render_chart(
             show_only=["templates/workers/worker-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        container_names = jmespath.search("spec.template.spec.containers[*].name", docs[0])
+        assert "worker-kerberos" not in container_names
 
     def test_kerberos_keytab_exists_in_worker_when_enable(self):
         docs = render_chart(

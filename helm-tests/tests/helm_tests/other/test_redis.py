@@ -371,11 +371,14 @@ class TestRedis:
         )
         assert jmespath.search("spec.template.spec.containers[0].resources.requests.cpu", docs[0]) == "300m"
 
-    def test_redis_resources_are_not_added_by_default(self):
+    def test_redis_resources_have_default(self):
         docs = render_chart(
             show_only=["templates/redis/redis-statefulset.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "500m", "memory": "512Mi"},
+            "requests": {"cpu": "250m", "memory": "256Mi"},
+        }
 
     def test_should_set_correct_helm_hooks_weight(self):
         docs = render_chart(

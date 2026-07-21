@@ -212,6 +212,20 @@ spec:
                   {{- include "dag_processor_readiness_check_command" . | indent 14 }}
                 {{- end }}
           {{- end }}
+          {{- if .Values.dagProcessor.startupProbe }}
+          startupProbe:
+            initialDelaySeconds: {{ .Values.dagProcessor.startupProbe.initialDelaySeconds }}
+            timeoutSeconds: {{ .Values.dagProcessor.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.dagProcessor.startupProbe.failureThreshold }}
+            periodSeconds: {{ .Values.dagProcessor.startupProbe.periodSeconds }}
+            exec:
+              command:
+                {{- if .Values.dagProcessor.startupProbe.command }}
+                  {{- toYaml .Values.dagProcessor.startupProbe.command | nindent 14 }}
+                {{- else }}
+                  {{- include "dag_processor_startup_check_command" . | indent 14 }}
+                {{- end }}
+          {{- end }}
         {{- if and (.Values.dags.gitSync.enabled) (not .Values.dags.persistence.enabled) }}
           {{- include "git_sync_container" . | indent 8 }}
         {{- end }}

@@ -243,11 +243,14 @@ class TestStatsd:
             "runAsNonRoot": True,
         }
 
-    def test_statsd_resources_are_not_added_by_default(self):
+    def test_statsd_resources_have_default(self):
         docs = render_chart(
             show_only=["templates/statsd/statsd-deployment.yaml"],
         )
-        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {}
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {"cpu": "200m", "memory": "256Mi"},
+            "requests": {"cpu": "100m", "memory": "128Mi"},
+        }
 
     def test_statsd_configmap_by_default(self):
         docs = render_chart(show_only=["templates/configmaps/statsd-configmap.yaml"])
