@@ -1307,13 +1307,17 @@ createUserJob:
 
   env: []
 
+  # Runs the full `airflow users create` CLI, which imports the whole Airflow
+  # package plus all installed providers and opens a DB connection - the same
+  # process weight as scheduler/worker, not a lightweight sidecar. 256Mi OOMKilled
+  # this job in practice (functional test failure, PR astronomer/airflow-chart#754).
   resources:
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 500m
+      memory: 1Gi
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 512Mi
 
 # Airflow database migration job settings
 migrateDatabaseJob:
@@ -1369,13 +1373,16 @@ migrateDatabaseJob:
     # Annotations to add to migrate database job kubernetes service account.
     annotations: {}
 
+  # Runs the full `airflow db migrate`/`db upgrade` CLI - same process weight as
+  # createUserJob above (whole Airflow package + providers + DB connection), so
+  # it gets the same bumped defaults rather than the lightweight-sidecar values.
   resources:
     limits:
-      cpu: 200m
-      memory: 256Mi
+      cpu: 500m
+      memory: 1Gi
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 512Mi
 
   # Launch additional containers into database migration job
   extraContainers: []

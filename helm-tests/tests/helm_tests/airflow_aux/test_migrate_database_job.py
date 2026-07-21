@@ -232,6 +232,24 @@ class TestMigrateDatabaseJob:
             "name": "release-name-test-container"
         }
 
+    def test_migrate_database_job_default_resources(self):
+        """This job execs the full `airflow db migrate`/`db upgrade` CLI - same process
+        weight as createUserJob (whole package + providers + DB connection), which OOMKilled
+        at 256Mi in a real cluster (functional test failure, astronomer/airflow-chart#754).
+        Lock in the higher default so it doesn't silently regress back down."""
+        docs = render_chart(show_only=["templates/jobs/migrate-database-job.yaml"])
+
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {
+                "cpu": "500m",
+                "memory": "1Gi",
+            },
+            "requests": {
+                "cpu": "100m",
+                "memory": "512Mi",
+            },
+        }
+
     def test_set_resources(self):
         docs = render_chart(
             values={

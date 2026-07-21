@@ -121,6 +121,24 @@ class TestCreateUserJob:
             == "airflow-scheduler"
         )
 
+    def test_create_user_job_default_resources(self):
+        """This job execs the full `airflow users create` CLI (whole package + providers +
+        DB connection), not a lightweight sidecar - it OOMKilled at 256Mi in a real cluster
+        (functional test failure, astronomer/airflow-chart#754). Lock in the higher default
+        so it doesn't silently regress back down."""
+        docs = render_chart(show_only=["templates/jobs/create-user-job.yaml"])
+
+        assert jmespath.search("spec.template.spec.containers[0].resources", docs[0]) == {
+            "limits": {
+                "cpu": "500m",
+                "memory": "1Gi",
+            },
+            "requests": {
+                "cpu": "100m",
+                "memory": "512Mi",
+            },
+        }
+
     def test_create_user_job_resources_are_configurable(self):
         resources = {
             "requests": {
