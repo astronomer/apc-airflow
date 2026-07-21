@@ -282,6 +282,17 @@ class TestPgbouncer:
             },
         }
 
+    def test_metrics_exporter_startup_probe_uses_http_not_broken_exec(self):
+        docs = render_chart(
+            values={"pgbouncer": {"enabled": True}},
+            show_only=["templates/pgbouncer/pgbouncer-deployment.yaml"],
+        )
+
+        startup_probe = jmespath.search("spec.template.spec.containers[1].startupProbe", docs[0])
+        assert "exec" not in startup_probe
+        assert startup_probe["httpGet"]["path"] == "/metrics"
+        assert startup_probe["httpGet"]["port"] == 9127
+
     def test_default_command_and_args(self):
         docs = render_chart(
             values={"pgbouncer": {"enabled": True}},
