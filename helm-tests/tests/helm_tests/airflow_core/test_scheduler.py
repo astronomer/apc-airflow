@@ -677,6 +677,15 @@ class TestScheduler:
             "requests": {"cpu": "500m", "memory": "1Gi"},
         }
 
+    def test_scheduler_pod_security_context_has_default_non_root_user(self):
+        docs = render_chart(
+            show_only=["templates/scheduler/scheduler-deployment.yaml"],
+        )
+        assert jmespath.search("spec.template.spec.securityContext", docs[0]) == {
+            "runAsUser": 50000,
+            "fsGroup": 0,
+        }
+
     def test_no_airflow_local_settings(self):
         docs = render_chart(
             values={"airflowLocalSettings": None}, show_only=["templates/scheduler/scheduler-deployment.yaml"]

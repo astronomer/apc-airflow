@@ -639,6 +639,15 @@ class TestTriggerer:
             "requests": {"cpu": "250m", "memory": "512Mi"},
         }
 
+    def test_pod_security_context_has_default_non_root_user(self):
+        docs = render_chart(
+            show_only=["templates/triggerer/triggerer-deployment.yaml"],
+        )
+        assert jmespath.search("spec.template.spec.securityContext", docs[0]) == {
+            "runAsUser": 50000,
+            "fsGroup": 0,
+        }
+
     @pytest.mark.parametrize(
         "persistence, update_strategy, expected_update_strategy",
         [

@@ -719,6 +719,16 @@ class TestDagProcessor:
             "requests": {"cpu": "500m", "memory": "1Gi"},
         }
 
+    def test_pod_security_context_has_default_non_root_user(self):
+        docs = render_chart(
+            values={"dagProcessor": {"enabled": True}},
+            show_only=["templates/dag-processor/dag-processor-deployment.yaml"],
+        )
+        assert jmespath.search("spec.template.spec.securityContext", docs[0]) == {
+            "runAsUser": 50000,
+            "fsGroup": 0,
+        }
+
     @pytest.mark.parametrize(
         "strategy, expected_strategy",
         [

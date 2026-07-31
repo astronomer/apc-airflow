@@ -503,6 +503,15 @@ class TestAPIServerDeployment:
         # wait-for-airflow-migrations shares apiServer.resources with the main container
         assert jmespath.search("spec.template.spec.initContainers[0].resources", docs[0]) == expected_resources
 
+    def test_api_server_pod_security_context_has_default_non_root_user(self):
+        docs = render_chart(
+            show_only=["templates/api-server/api-server-deployment.yaml"],
+        )
+        assert jmespath.search("spec.template.spec.securityContext", docs[0]) == {
+            "runAsUser": 50000,
+            "fsGroup": 0,
+        }
+
     @pytest.mark.parametrize(
         ("airflow_version", "strategy", "expected_strategy"),
         [
