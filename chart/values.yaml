@@ -1015,8 +1015,16 @@ scheduler:
     periodSeconds: 60
     command: ~
 
+  # PINF-1150: readinessProbe and livenessProbe run the identical exec command
+  # (fork a process, import Airflow, round-trip the DB). Giving both the same
+  # initialDelaySeconds/periodSeconds means kubelet fires them at the exact same
+  # instant every 60s, doubling the CPU/DB load from health-checking alone at that
+  # moment -- readiness has no more timeout headroom than liveness, so it's the
+  # first to trip under contention (e.g. a concurrent DAG-file-processor parsing
+  # pass). initialDelaySeconds: 40 puts readiness exactly opposite liveness within
+  # the 60s cycle (10s and 40s, 30s apart), so the two health checks never coincide.
   readinessProbe:
-    initialDelaySeconds: 10
+    initialDelaySeconds: 40
     timeoutSeconds: 20
     failureThreshold: 5
     periodSeconds: 60
