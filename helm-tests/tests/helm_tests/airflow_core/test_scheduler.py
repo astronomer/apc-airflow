@@ -468,6 +468,38 @@ class TestScheduler:
             "wow such test",
         ]
 
+    def test_readinessprobe_and_livenessprobe_defaults_do_not_fire_in_lockstep(self):
+        """PINF-1150: readinessProbe and livenessProbe run the identical exec command
+        (see test_readinessprobe_command_depends_on_airflow_version /
+        test_livenessprobe_command_depends_on_airflow_version below). If both probes
+        share the same initialDelaySeconds and periodSeconds, kubelet fires them at
+        the exact same instant every cycle, doubling the CPU/DB load from
+        health-checking alone at that moment -- and readiness has no more timeout
+        headroom than liveness, so it's the first to trip under contention. This
+        asserts the chart's *default* schedule (not an override) keeps the two
+        offset, so a future edit reverting initialDelaySeconds back to a shared
+        value doesn't silently reintroduce the lockstep.
+        """
+        docs = render_chart(show_only=["templates/scheduler/scheduler-deployment.yaml"])
+
+        liveness_delay = jmespath.search(
+            "spec.template.spec.containers[0].livenessProbe.initialDelaySeconds", docs[0]
+        )
+        readiness_delay = jmespath.search(
+            "spec.template.spec.containers[0].readinessProbe.initialDelaySeconds", docs[0]
+        )
+        liveness_period = jmespath.search("spec.template.spec.containers[0].livenessProbe.periodSeconds", docs[0])
+        readiness_period = jmespath.search(
+            "spec.template.spec.containers[0].readinessProbe.periodSeconds", docs[0]
+        )
+
+        assert liveness_delay == 10
+        assert readiness_delay == 40
+        assert liveness_period == readiness_period == 60
+        # Never coincide: the two schedules must not land on the same instant modulo
+        # their shared period.
+        assert (readiness_delay - liveness_delay) % liveness_period != 0
+
     def test_startupprobe_values_are_configurable(self):
         docs = render_chart(
             values={
